@@ -1,0 +1,27 @@
+# Dependency directories
+node_modules/
+
+# Build outputs
+target/
+dist/
+
+# IDE files
+.idea/
+*.iml
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Log files
+logs
+*.log
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local

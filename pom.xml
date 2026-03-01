@@ -84,6 +84,7 @@
 
     <modules>
         <module>easy-query-core</module>
+        <module>easy-query-api</module>
         <module>easy-query-example</module>
     </modules>
 
