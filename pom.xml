@@ -15,8 +15,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
         <junit.version>5.9.1</junit.version>
         <jsqlparser.version>4.6</jsqlparser.version>
         <hikaricp.version>5.0.1</hikaricp.version>
@@ -26,18 +26,6 @@
     </properties>
 
     <dependencies>
-        <!-- SQL解析 -->
-        <dependency>
-            <groupId>com.github.jsqlparser</groupId>
-            <artifactId>jsqlparser</artifactId>
-            <version>${jsqlparser.version}</version>
-        </dependency>
-        <!-- 数据库连接池 -->
-        <dependency>
-            <groupId>com.zaxxer</groupId>
-            <artifactId>HikariCP</artifactId>
-            <version>${hikaricp.version}</version>
-        </dependency>
         <!-- 配置管理 -->
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -45,7 +33,7 @@
             <version>${commons-configuration.version}</version>
         </dependency>
         <!-- 日志 -->
-        <dependency>
+        <!--<dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
             <version>${log4j2.version}</version>
@@ -54,7 +42,7 @@
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
             <version>${log4j2.version}</version>
-        </dependency>
+        </dependency>-->
         <!-- 测试 -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -82,9 +70,28 @@
         </dependency>
     </dependencies>
 
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- 数据库连接池 -->
+            <dependency>
+                <groupId>com.zaxxer</groupId>
+                <artifactId>HikariCP</artifactId>
+                <version>${hikaricp.version}</version>
+            </dependency>
+            <!-- SQL解析 -->
+            <dependency>
+                <groupId>com.github.jsqlparser</groupId>
+                <artifactId>jsqlparser</artifactId>
+                <version>${jsqlparser.version}</version>
+            </dependency>
+        </dependencies>
+
+    </dependencyManagement>
+
     <modules>
         <module>easy-query-core</module>
-        <module>easy-query-api</module>
+        <module>easy-query-web</module>
         <module>easy-query-example</module>
     </modules>
 

@@ -1,0 +1,15 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-EasyQueryApplication<easy-query-web>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.easyquery.web.EasyQueryApplication",
+            "projectName": "easy-query-web",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env",
+            "vmArgs": "-Dfile.encoding=UTF-8"
+        }
+    ]
+}

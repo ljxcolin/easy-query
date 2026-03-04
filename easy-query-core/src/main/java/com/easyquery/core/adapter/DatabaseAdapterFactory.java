@@ -50,7 +50,7 @@ public class DatabaseAdapterFactory {
         }
         
         // 初始化适配器
-        adapter.init(config);
+        //adapter.init(config);
         
         return adapter;
     }

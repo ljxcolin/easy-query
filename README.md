@@ -19,7 +19,7 @@ easy-query 是一个开源的分库分表查询工具，旨在简化分布式数
 
 ### 环境要求
 
-- Java 11+
+- Java 21+
 - Maven 3.6+
 - 数据库（MySQL 5.7+ 或 PostgreSQL 9.6+）
 
@@ -231,15 +231,42 @@ System.out.println("监控指标: " + metrics);
   - **config**: 配置管理
   - **monitor**: 监控与日志
 
+- **web**: RESTful API 模块
+  - **config**: 配置管理
+  - **controller**: API 控制器
+    - **DataSourceController**: 数据源管理
+    - **ShardingRuleController**: 分片规则管理
+    - **SqlController**: SQL 查询执行
+  - **model**: 数据模型
+
+- **ui**: 前端界面模块
+  - **components**: Vue 组件
+    - **DataSource.vue**: 数据源管理组件
+    - **ShardingRule.vue**: 分片规则管理组件
+    - **SqlQuery.vue**: SQL 查询组件
+  - **api**: API 接口封装
+  - **router**: 路由配置
+
 ### 模块依赖
 
 ```
 easy-query-core
-├── JSqlParser (SQL解析)
+├── JSqlParser (SQL 解析)
 ├── HikariCP (连接池)
 ├── Apache Commons Configuration (配置管理)
 ├── Log4j2 (日志)
 └── JUnit 5, Mockito (测试)
+
+easy-query-web
+├── Spring Boot 3.x
+├── Spring Data JPA
+├── MySQL Connector
+└── Jackson
+
+easy-query-ui
+├── Vue 3
+├── Vite
+└── Axios
 ```
 
 ## 示例
