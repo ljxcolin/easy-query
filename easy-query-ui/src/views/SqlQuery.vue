@@ -1,8 +1,5 @@
 <template>
   <div class="sql-query">
-    <div class="page-header">
-      <h2 class="page-title">SQL 查询</h2>
-    </div>
     <el-card>
       <template #header>
         <div class="card-header">
@@ -154,21 +151,7 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .sql-query {
-  padding: 0;
-}
-
-.page-header {
-  padding: 15px 20px;
-  background-color: #fff;
-  border-bottom: 1px solid #e6e6e6;
-  margin: -20px -20px 20px -20px;
-}
-
-.page-title {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 600;
-  color: #303133;
+  padding: 20px;
 }
 
 .card-header {

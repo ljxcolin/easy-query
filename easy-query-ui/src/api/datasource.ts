@@ -6,21 +6,25 @@ export default {
   getAllDataSources(): Promise<Response<DataSource[]>> {
     return request.get('/data-sources');
   },
-  // 获取单个数据源
-  getDataSource(name: string): Promise<Response<DataSource>> {
-    return request.get(`/data-sources/${name}`);
+  // 获取单个数据源 (按名称)
+  getDataSourceByName(name: string): Promise<Response<DataSource>> {
+    return request.get(`/data-sources/name/${name}`);
+  },
+  // 获取单个数据源 (按 ID)
+  getDataSourceById(id: number): Promise<Response<DataSource>> {
+    return request.get(`/data-sources/${id}`);
   },
   // 创建数据源
   createDataSource(dataSource: DataSource): Promise<Response<DataSource>> {
     return request.post('/data-sources', dataSource);
   },
-  // 更新数据源
-  updateDataSource(name: string, dataSource: DataSource): Promise<Response<DataSource>> {
-    return request.put(`/data-sources/${name}`, dataSource);
+  // 更新数据源 (按 ID)
+  updateDataSourceById(id: number, dataSource: DataSource): Promise<Response<DataSource>> {
+    return request.put(`/data-sources/${id}`, dataSource);
   },
-  // 删除数据源
-  deleteDataSource(name: string): Promise<Response<void>> {
-    return request.delete(`/data-sources/${name}`);
+  // 删除数据源 (按 ID)
+  deleteDataSourceById(id: number): Promise<Response<void>> {
+    return request.delete(`/data-sources/${id}`);
   },
   // 测试数据源连接
   testConnection(dataSource: DataSource): Promise<Response<boolean>> {

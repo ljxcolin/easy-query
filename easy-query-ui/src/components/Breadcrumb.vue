@@ -1,17 +1,19 @@
 <template>
   <div class="breadcrumb-container">
     <el-breadcrumb separator="/">
-      <el-breadcrumb-item :to="{ path: '/' }" v-if="items.length > 1">
+      <el-breadcrumb-item>
+        <el-button type="info" @click="handleBack" circle size="small" :disabled="!canGoBack">
+          <el-icon><ArrowLeft /></el-icon>
+        </el-button>
+      </el-breadcrumb-item>
+      <el-breadcrumb-item :to="{ path: '/' }">
         <el-icon><HomeFilled /></el-icon>
         首页
       </el-breadcrumb-item>
       <el-breadcrumb-item 
-        v-for="(item, index) in items" 
-        :key="index"
-        :to="item.path"
+        v-if="currentName"
       >
-        <el-icon v-if="item.icon"><component :is="item.icon" /></el-icon>
-        {{ item.name }}
+        {{ currentName }}
       </el-breadcrumb-item>
     </el-breadcrumb>
   </div>
@@ -19,66 +21,50 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useRoute } from 'vue-router';
-import { HomeFilled } from '@element-plus/icons-vue';
-
-interface BreadcrumbItem {
-  name: string;
-  path: string;
-  icon?: string;
-}
+import { useRoute, useRouter } from 'vue-router';
+import { HomeFilled, ArrowLeft } from '@element-plus/icons-vue';
 
 const route = useRoute();
+const router = useRouter();
 
-const items = computed<BreadcrumbItem[]>(() => {
-  const breadcrumbItems: BreadcrumbItem[] = [];
-  
-  // 根据当前路由路径生成面包屑
-  const pathSegments = route.path.split('/').filter(Boolean);
-  
-  pathSegments.forEach((segment, index) => {
-    const path = '/' + pathSegments.slice(0, index + 1).join('/');
-    const name = getSegmentName(segment);
-    const icon = getSegmentIcon(segment);
-    
-    breadcrumbItems.push({
-      name,
-      path,
-      icon
-    });
-  });
-  
-  return breadcrumbItems;
+const canGoBack = computed(() => {
+  return route.path !== '/';
 });
+
+const currentName = computed(() => {
+  const pathSegments = route.path.split('/').filter(Boolean);
+  if (pathSegments.length > 0) {
+    const segment = pathSegments[0];
+    return getSegmentName(segment);
+  }
+  return '';
+});
+
+const handleBack = () => {
+  router.back();
+};
 
 const getSegmentName = (segment: string): string => {
   const nameMap: Record<string, string> = {
     'data-source': '数据源管理',
     'sql-query': 'SQL 查询',
-    'sharding-rules': '分片规则'
+    'sharding-rule': '分片规则'
   };
   return nameMap[segment] || segment;
-};
-
-const getSegmentIcon = (segment: string): string | undefined => {
-  const iconMap: Record<string, string> = {
-    'data-source': 'DataAnalysis',
-    'sql-query': 'Document',
-    'sharding-rules': 'Setting'
-  };
-  return iconMap[segment];
 };
 </script>
 
 <style scoped>
 .breadcrumb-container {
-  padding: 15px 20px;
+  padding: 12px 20px;
   background-color: #fff;
   border-bottom: 1px solid #e6e6e6;
 }
 
 :deep(.el-breadcrumb) {
   font-size: 14px;
+  display: flex;
+  align-items: center;
 }
 
 :deep(.el-breadcrumb__item) {
@@ -89,20 +75,26 @@ const getSegmentIcon = (segment: string): string | undefined => {
 :deep(.el-breadcrumb__item .el-icon) {
   margin-right: 4px;
   font-size: 16px;
+  color: #1976d2;
 }
 
 :deep(.el-breadcrumb__inner) {
   display: flex;
   align-items: center;
-  color: #606266;
+  color: #1565c0;
+  font-weight: 500;
 }
 
 :deep(.el-breadcrumb__inner:hover) {
-  color: #409eff;
+  color: #1976d2;
 }
 
 :deep(.el-breadcrumb__separator) {
   margin: 0 8px;
-  color: #c0c4cc;
+  color: #64b5f6;
+}
+
+:deep(.el-button) {
+  margin-right: 8px;
 }
 </style>

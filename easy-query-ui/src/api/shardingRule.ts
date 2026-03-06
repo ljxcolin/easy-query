@@ -15,12 +15,12 @@ export default {
     return request.post('/sharding-rules', shardingRule);
   },
   // 更新分片规则
-  updateShardingRule(name: string, shardingRule: ShardingRule): Promise<Response<ShardingRule>> {
-    return request.put(`/sharding-rules/${name}`, shardingRule);
+  updateShardingRule(id: number, shardingRule: ShardingRule): Promise<Response<ShardingRule>> {
+    return request.put(`/sharding-rules/${id}`, shardingRule);
   },
   // 删除分片规则
-  deleteShardingRule(name: string): Promise<Response<void>> {
-    return request.delete(`/sharding-rules/${name}`);
+  deleteShardingRule(id: number): Promise<Response<void>> {
+    return request.delete(`/sharding-rules/${id}`);
   },
   // 测试分片规则
   testShardingRule(shardingRule: ShardingRule, shardingKey: any): Promise<Response<string>> {

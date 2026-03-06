@@ -8,8 +8,7 @@
             "mainClass": "com.easyquery.web.EasyQueryApplication",
             "projectName": "easy-query-web",
             "args": "",
-            "envFile": "${workspaceFolder}/.env",
-            "vmArgs": "-Dfile.encoding=UTF-8"
+            "envFile": "${workspaceFolder}/.env"
         }
     ]
 }

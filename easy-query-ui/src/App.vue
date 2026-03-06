@@ -7,6 +7,10 @@
       <el-container class="main-container">
         <el-aside width="200px" class="aside">
         <el-menu :default-active="activeMenu" class="el-menu-vertical-demo" @select="handleMenuSelect">
+          <el-menu-item index="/">
+            <el-icon><HomeFilled /></el-icon>
+            <span>首页</span>
+          </el-menu-item>
           <el-menu-item index="/data-source">
             <el-icon><DataAnalysis /></el-icon>
             <span>数据源管理</span>
@@ -24,7 +28,6 @@
         <el-main class="main">
         <div class="nav-bar">
           <Breadcrumb />
-          <BackButton />
         </div>
         <div class="page-content">
           <router-view />
@@ -38,9 +41,8 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { DataAnalysis, Setting, Document } from '@element-plus/icons-vue';
+import { DataAnalysis, Setting, Document, HomeFilled } from '@element-plus/icons-vue';
 import Breadcrumb from './components/Breadcrumb.vue';
-import BackButton from './components/BackButton.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -67,12 +69,12 @@ const handleMenuSelect = (index: string) => {
 }
 
 .header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  color: #1565c0;
   display: flex;
   align-items: center;
   padding: 0 25px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 12px rgba(21, 101, 192, 0.15);
   z-index: 100;
   flex-shrink: 0;
 }
@@ -139,9 +141,9 @@ const handleMenuSelect = (index: string) => {
 }
 
 :deep(.el-menu-item.is-active) {
-  background: linear-gradient(90deg, #e6f7ff 0%, #bae7ff 100%);
-  color: #1890ff;
-  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.15);
+  background: linear-gradient(90deg, #e3f2fd 0%, #bbdefb 100%);
+  color: #1976d2;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.2);
 }
 
 :deep(.el-icon) {

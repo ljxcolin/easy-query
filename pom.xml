@@ -15,13 +15,14 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <java.version>21</java.version>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <junit.version>5.9.1</junit.version>
         <jsqlparser.version>4.6</jsqlparser.version>
         <hikaricp.version>5.0.1</hikaricp.version>
         <commons-configuration.version>2.10.0</commons-configuration.version>
-        <log4j2.version>2.20.0</log4j2.version>
+        <log4j2.version>2.22.0</log4j2.version>
         <mockito.version>5.3.1</mockito.version>
     </properties>
 
@@ -78,6 +79,13 @@
                 <groupId>com.zaxxer</groupId>
                 <artifactId>HikariCP</artifactId>
                 <version>${hikaricp.version}</version>
+                <optional>true</optional>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-api</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <!-- SQL解析 -->
             <dependency>

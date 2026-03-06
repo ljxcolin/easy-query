@@ -11,7 +11,7 @@ public class ShardingRuleEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true, length = 64)
+    @Column(nullable = false, length = 64)
     private String name;
 
     @Column(name = "strategy_type", nullable = false, length = 32)
@@ -29,8 +29,8 @@ public class ShardingRuleEntity {
     @Column(name = "data_source_name", nullable = false, length = 64)
     private String dataSourceName;
 
-    @Column(name = "config_json", columnDefinition = "TEXT")
-    private String configJson;
+    @Column(name = "strategy_config", columnDefinition = "TEXT")
+    private String strategyConfig;
 
     @Column(length = 256)
     private String description;
@@ -111,12 +111,12 @@ public class ShardingRuleEntity {
         this.dataSourceName = dataSourceName;
     }
 
-    public String getConfigJson() {
-        return configJson;
+    public String getStrategyConfig() {
+        return strategyConfig;
     }
 
-    public void setConfigJson(String configJson) {
-        this.configJson = configJson;
+    public void setStrategyConfig(String strategyConfig) {
+        this.strategyConfig = strategyConfig;
     }
 
     public String getDescription() {

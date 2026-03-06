@@ -53,7 +53,13 @@ public class ShardingRuleServiceImpl implements ShardingRuleService {
 
     @Override
     @Transactional(readOnly = true)
-    public boolean existsByName(String name) {
-        return shardingRuleRepository.existsByName(name);
+    public boolean existsById(Long id) {
+        return shardingRuleRepository.existsById(id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean existsByDataSourceIdAndTableName(Long dataSourceId, String tableName) {
+        return shardingRuleRepository.existsByDataSourceIdAndTableName(dataSourceId, tableName);
     }
 }

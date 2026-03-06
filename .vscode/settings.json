@@ -1,4 +1,4 @@
 {
     "java.configuration.updateBuildConfiguration": "automatic",
-    "java.compile.nullAnalysis.mode": "disabled"
+    "spring-boot.ls.java.home": "C:\\Users\\EDY\\.jdks\\oracle_open_jdk-21"
 }

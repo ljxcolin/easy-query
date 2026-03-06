@@ -22,20 +22,34 @@ export interface DataSource {
   updatedTime?: string;
 }
 
+// 分片策略实体
+export interface ShardingStrategy {
+  // HASH 策略字段
+  shardingCount?: number;
+  shardingStart?: number;
+  // RANGE 策略字段
+  rangeStart?: number;
+  rangeStep?: number;
+  // MONTH/DAY 策略字段
+  padZero?: boolean;
+}
+
 // 分片规则实体
 export interface ShardingRule {
   id?: number;
   name: string;
-  strategyType: string;
-  tableName?: string;
-  shardingColumn?: string;
   dataSourceId?: number;
   dataSourceName?: string;
-  configJson?: string;
+  tableName?: string;
+  shardingColumn?: string;
+  strategyType: string;
+  strategyConfig?: string;
   description?: string;
   status?: number;
   createdTime?: string;
   updatedTime?: string;
+  // 嵌套的策略配置对象
+  shardingStrategy?: ShardingStrategy;
 }
 
 // SQL 请求

@@ -4,8 +4,6 @@ import com.easyquery.web.entity.ShardingRuleEntity;
 import com.easyquery.web.model.Response;
 import com.easyquery.web.service.ShardingRuleService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -23,48 +21,46 @@ public class ShardingRuleController {
     }
 
     @GetMapping("/{name}")
-    public ResponseEntity<Response<ShardingRuleEntity>> getShardingRule(@PathVariable String name) {
+    public Response<ShardingRuleEntity> getShardingRule(@PathVariable("name") String name) {
         return shardingRuleService.findByName(name)
                 .map(Response::success)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).body(Response.error(404, "ShardingRule not found")));
+                .orElse(Response.error(404, "ShardingRule not found"));
     }
 
-    @GetMapping("/id/{id}")
-    public ResponseEntity<Response<ShardingRuleEntity>> getShardingRuleById(@PathVariable Long id) {
+    @GetMapping("/{id}")
+    public Response<ShardingRuleEntity> getShardingRuleById(@PathVariable("id") Long id) {
         return shardingRuleService.findById(id)
                 .map(Response::success)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).body(Response.error(404, "ShardingRule not found")));
+                .orElse(Response.error(404, "ShardingRule not found"));
     }
 
     @PostMapping
-    public ResponseEntity<Response<ShardingRuleEntity>> createShardingRule(@RequestBody ShardingRuleEntity shardingRule) {
-        if (shardingRuleService.existsByName(shardingRule.getName())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Response.error(400, "ShardingRule already exists"));
+    public Response<ShardingRuleEntity> createShardingRule(@RequestBody ShardingRuleEntity shardingRule) {
+        if (shardingRuleService.existsByDataSourceIdAndTableName(shardingRule.getDataSourceId(), shardingRule.getTableName())) {
+            return Response.error(400, "ShardingRule already exists");
         }
         ShardingRuleEntity saved = shardingRuleService.save(shardingRule);
-        return ResponseEntity.ok(Response.success(saved));
+        return Response.success(saved);
     }
 
-    @PutMapping("/{name}")
-    public ResponseEntity<Response<ShardingRuleEntity>> updateShardingRule(@PathVariable String name, @RequestBody ShardingRuleEntity shardingRule) {
-        return shardingRuleService.findByName(name)
+    @PutMapping("/{id}")
+    public Response<ShardingRuleEntity> updateShardingRule(@PathVariable("id") Long id, @RequestBody ShardingRuleEntity shardingRule) {
+        return shardingRuleService.findById(id)
                 .map(existing -> {
                     shardingRule.setId(existing.getId());
                     ShardingRuleEntity updated = shardingRuleService.save(shardingRule);
-                    return ResponseEntity.ok(Response.success(updated));
+                    return Response.success(updated);
                 })
-                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).body(Response.error(404, "ShardingRule not found")));
+                .orElse(Response.error(404, "ShardingRule not found"));
     }
 
-    @DeleteMapping("/{name}")
-    public ResponseEntity<Response<Void>> deleteShardingRule(@PathVariable String name) {
-        if (!shardingRuleService.existsByName(name)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Response.error(404, "ShardingRule not found"));
+    @DeleteMapping("/{id}")
+    public Response<Void> deleteShardingRule(@PathVariable("id") Long id) {
+        if (!shardingRuleService.existsById(id)) {
+            return Response.error(404, "ShardingRule not found");
         }
-        shardingRuleService.deleteByName(name);
-        return ResponseEntity.ok(Response.success(null));
+        shardingRuleService.deleteById(id);
+        return Response.success(null);
     }
 
     @PostMapping("/test")
