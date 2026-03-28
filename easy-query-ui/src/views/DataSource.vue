@@ -51,26 +51,32 @@
       :title="dialogTitle"
       width="600px"
     >
-      <el-form :model="form" label-width="120px">
-        <el-form-item label="数据源名称">
+      <el-form :model="form" :rules="formRules" ref="formRef" label-width="120px">
+        <el-form-item label="数据源名称" prop="name">
           <el-input v-model="form.name" :disabled="isEdit" />
         </el-form-item>
-        <el-form-item label="连接 URL">
+        <el-form-item label="连接 URL" prop="url">
           <el-input v-model="form.url" />
         </el-form-item>
-        <el-form-item label="用户名">
+        <el-form-item label="用户名" prop="username">
           <el-input v-model="form.username" />
         </el-form-item>
-        <el-form-item label="密码">
-          <el-input v-model="form.password" type="password" />
+        <el-form-item label="密码" prop="password">
+          <el-input v-model="form.password" :type="passwordVisible ? 'text' : 'password'">
+            <template #suffix>
+              <el-icon @click="passwordVisible = !passwordVisible" style="cursor: pointer">
+                <component :is="passwordVisible ? 'View' : 'Hide'" />
+              </el-icon>
+            </template>
+          </el-input>
         </el-form-item>
-        <el-form-item label="驱动类">
+        <el-form-item label="驱动类" prop="driverClassName">
           <el-input v-model="form.driverClassName" />
         </el-form-item>
-        <el-form-item label="最大连接数">
+        <el-form-item label="最大连接数" prop="maximumPoolSize">
           <el-input-number v-model="form.maximumPoolSize" :min="1" />
         </el-form-item>
-        <el-form-item label="最小空闲数">
+        <el-form-item label="最小空闲数" prop="minimumIdle">
           <el-input-number v-model="form.minimumIdle" :min="0" />
         </el-form-item>
       </el-form>
@@ -87,7 +93,8 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { ElMessage, ElMessageBox } from 'element-plus';
+import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus';
+import { View, Hide } from '@element-plus/icons-vue';
 import dataSourceApi from '@/api/datasource';
 import type { DataSource } from '@/types';
 
@@ -102,6 +109,18 @@ const dialogVisible = ref<boolean>(false);
 const dialogTitle = ref<string>('新增数据源');
 const isEdit = ref<boolean>(false);
 const saving = ref<boolean>(false);
+const formRef = ref<FormInstance>();
+const passwordVisible = ref<boolean>(false);
+
+const formRules: FormRules = {
+  name: [{ required: true, message: '请输入数据源名称', trigger: 'blur' }],
+  url: [{ required: true, message: '请输入连接 URL', trigger: 'blur' }],
+  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+  password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+  driverClassName: [{ required: true, message: '请输入驱动类', trigger: 'blur' }],
+  maximumPoolSize: [{ required: true, message: '请输入最大连接数', trigger: 'blur' }],
+  minimumIdle: [{ required: true, message: '请输入最小空闲数', trigger: 'blur' }]
+};
 
 // 表单数据
 const form = reactive<DataSource>({
@@ -149,29 +168,35 @@ const handleEdit = (row: DataSource) => {
 };
 
 const handleSave = async () => {
-  saving.value = true;
-  try {
-    if (isEdit.value) {
-      const response = await dataSourceApi.updateDataSourceById(form.id!, form);
-      if (response.code === 200) {
-        ElMessage.success('更新成功');
-        dialogVisible.value = false;
-        loadDataSources();
+  if (!formRef.value) return;
+  
+  await formRef.value.validate(async (valid) => {
+    if (!valid) return;
+    
+    saving.value = true;
+    try {
+      if (isEdit.value) {
+        const response = await dataSourceApi.updateDataSourceById(form.id!, form);
+        if (response.code === 200) {
+          ElMessage.success('更新成功');
+          dialogVisible.value = false;
+          loadDataSources();
+        }
+      } else {
+        const response = await dataSourceApi.createDataSource(form);
+        if (response.code === 200) {
+          ElMessage.success('新增成功');
+          dialogVisible.value = false;
+          loadDataSources();
+        }
       }
-    } else {
-      const response = await dataSourceApi.createDataSource(form);
-      if (response.code === 200) {
-        ElMessage.success('新增成功');
-        dialogVisible.value = false;
-        loadDataSources();
-      }
+    } catch (error: any) {
+      console.error('Error saving data source:', error);
+      ElMessage.error(error.response?.data?.message || '操作失败');
+    } finally {
+      saving.value = false;
     }
-  } catch (error: any) {
-    console.error('Error saving data source:', error);
-    ElMessage.error(error.response?.data?.message || '操作失败');
-  } finally {
-    saving.value = false;
-  }
+  });
 };
 
 const handleDelete = (row: DataSource) => {

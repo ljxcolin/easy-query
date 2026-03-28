@@ -1,4 +1,4 @@
-package com.easyquery.core.adapter;
+package com.easyquery.core.enums;
 
 /**
  * 数据库类型

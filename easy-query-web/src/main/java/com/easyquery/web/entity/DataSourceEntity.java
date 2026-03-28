@@ -38,9 +38,6 @@ public class DataSourceEntity {
     @Column(name = "idle_timeout", nullable = false)
     private Long idleTimeout = 600000L;
 
-    @Column(nullable = false)
-    private Integer status = 1;
-
     @Column(name = "created_time", nullable = false, updatable = false)
     private LocalDateTime createdTime;
 
@@ -136,14 +133,6 @@ public class DataSourceEntity {
 
     public void setIdleTimeout(Long idleTimeout) {
         this.idleTimeout = idleTimeout;
-    }
-
-    public Integer getStatus() {
-        return status;
-    }
-
-    public void setStatus(Integer status) {
-        this.status = status;
     }
 
     public LocalDateTime getCreatedTime() {

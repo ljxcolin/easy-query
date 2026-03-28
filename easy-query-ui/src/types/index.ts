@@ -55,7 +55,19 @@ export interface ShardingRule {
 // SQL 请求
 export interface SqlRequest {
   sql: string;
-  shardingKey?: any;
+  dataSourceId?: number;
+}
+
+// SQL查询实体
+export interface SqlQuery {
+  id?: number;
+  name: string;
+  dataSourceId: number;
+  sqlContent: string;
+  shardingKey?: string;
+  description?: string;
+  createdTime?: string;
+  updatedTime?: string;
 }
 
 // 分页参数

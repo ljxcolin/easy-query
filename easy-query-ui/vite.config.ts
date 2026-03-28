@@ -1,5 +1,6 @@
 import { defineConfig, loadEnv, type UserConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import monacoEditorEsmPlugin from 'vite-plugin-monaco-editor-esm'
 import { resolve, dirname } from 'path'
 import { fileURLToPath } from 'url'
 
@@ -10,7 +11,12 @@ export default defineConfig(({ mode }): UserConfig => {
   const env = loadEnv(mode, process.cwd(), '')
   
   return {
-    plugins: [vue()],
+    plugins: [
+      vue(),
+      monacoEditorEsmPlugin({
+        languageWorkers: ['editorWorkerService']
+      })
+    ],
     resolve: {
       alias: {
         '@': resolve(__dirname, 'src')

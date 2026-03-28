@@ -103,7 +103,24 @@ CREATE TABLE `sql_log` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='SQL 执行日志表';
 
 -- ============================================
--- 6. 监控指标表
+-- 6. SQL查询管理表（保存常用SQL）
+-- ============================================
+DROP TABLE IF EXISTS `sql_query`;
+CREATE TABLE `sql_query` (
+    `id` BIGINT(20) NOT NULL AUTO_INCREMENT COMMENT '主键 ID',
+    `name` VARCHAR(64) NOT NULL COMMENT 'SQL查询名称',
+    `data_source_name` VARCHAR(64) NOT NULL COMMENT '数据源名称',
+    `sql_content` TEXT NOT NULL COMMENT 'SQL内容',
+    `sharding_key` VARCHAR(64) DEFAULT NULL COMMENT '分片键值',
+    `description` TEXT COMMENT '描述',
+    `created_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updated_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    KEY `idx_data_source_name` (`data_source_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='SQL查询管理表';
+
+-- ============================================
+-- 7. 监控指标表
 -- ============================================
 DROP TABLE IF EXISTS `monitor_metrics`;
 CREATE TABLE `monitor_metrics` (
@@ -121,7 +138,7 @@ CREATE TABLE `monitor_metrics` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='监控指标表';
 
 -- ============================================
--- 7. 事务日志表
+-- 8. 事务日志表
 -- ============================================
 DROP TABLE IF EXISTS `transaction_log`;
 CREATE TABLE `transaction_log` (
@@ -143,7 +160,7 @@ CREATE TABLE `transaction_log` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='事务日志表';
 
 -- ============================================
--- 8. 配置历史表
+-- 9. 配置历史表
 -- ============================================
 DROP TABLE IF EXISTS `config_history`;
 CREATE TABLE `config_history` (

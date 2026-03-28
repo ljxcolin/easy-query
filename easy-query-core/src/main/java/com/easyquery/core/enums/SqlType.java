@@ -1,4 +1,4 @@
-package com.easyquery.core.parser;
+package com.easyquery.core.enums;
 
 /**
  * SQL类型

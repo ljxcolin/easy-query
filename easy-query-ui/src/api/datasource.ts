@@ -29,5 +29,9 @@ export default {
   // 测试数据源连接
   testConnection(dataSource: DataSource): Promise<Response<boolean>> {
     return request.post('/data-sources/test-connection', dataSource);
+  },
+  // 获取数据源下的所有表
+  getTables(dataSourceId: number): Promise<Response<string[]>> {
+    return request.get(`/data-sources/${dataSourceId}/tables`);
   }
 };

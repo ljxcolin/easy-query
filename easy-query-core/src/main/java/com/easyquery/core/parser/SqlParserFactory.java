@@ -14,24 +14,7 @@ public class SqlParserFactory {
      * @return SQL解析器实例
      */
     public static SqlParser createParser(Map<String, Object> config) {
-        SqlParser parser;
-        
-        // 检查是否使用自定义解析器
-        if (config.containsKey("customClassName")) {
-            try {
-                String className = (String) config.get("customClassName");
-                Class<?> clazz = Class.forName(className);
-                parser = (SqlParser) clazz.newInstance();
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to create custom SQL parser", e);
-            }
-        } else {
-            // 使用默认解析器
-            parser = new DefaultSqlParser();
-        }
-        
-        // 初始化解析器
-        parser.init(config);
+        SqlParser parser = createDefaultParser();
         
         return parser;
     }
@@ -42,7 +25,7 @@ public class SqlParserFactory {
      */
     public static SqlParser createDefaultParser() {
         SqlParser parser = new DefaultSqlParser();
-        parser.init(java.util.Collections.emptyMap());
+        //parser.init(java.util.Collections.emptyMap());
         return parser;
     }
 }

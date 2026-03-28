@@ -24,14 +24,14 @@ public class DataSourceServiceImpl implements DataSourceService {
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<DataSourceEntity> findById(Long id) {
-        return dataSourceRepository.findById(id);
+    public DataSourceEntity findById(Long id) {
+        return dataSourceRepository.findById(id).orElse(null);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<DataSourceEntity> findByName(String name) {
-        return dataSourceRepository.findByName(name);
+    public DataSourceEntity findByName(String name) {
+        return dataSourceRepository.findByName(name).orElse(null);
     }
 
     @Override

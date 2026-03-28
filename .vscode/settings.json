@@ -1,4 +1,12 @@
 {
     "java.configuration.updateBuildConfiguration": "automatic",
-    "spring-boot.ls.java.home": "C:\\Users\\EDY\\.jdks\\oracle_open_jdk-21"
+    "java.configuration.runtimes": [
+        {
+            "name": "JavaSE-21",
+            "path": "C:\\Users\\EDY\\.jdks\\oracle_open_jdk-21",
+            "default": true
+        }
+    ],
+    "spring-boot.ls.java.home": "C:\\Users\\EDY\\.jdks\\oracle_open_jdk-21",
+    "java.debug.settings.onBuildFailureProceed": true
 }

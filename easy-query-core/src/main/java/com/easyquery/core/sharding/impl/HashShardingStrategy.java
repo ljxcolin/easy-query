@@ -1,79 +1,77 @@
 package com.easyquery.core.sharding.impl;
 
-import com.easyquery.core.sharding.ShardingResult;
+import com.easyquery.core.sharding.SqlCondition;
+import com.easyquery.core.utils.TableUtils;
 import com.easyquery.core.sharding.ShardingStrategy;
-import com.easyquery.core.sharding.ShardingStrategyType;
-import java.util.Map;
+import com.easyquery.core.enums.ConditionType;
+import com.easyquery.core.enums.StrategyType;
+import com.easyquery.core.model.ShardingRuleConfig;
+import com.easyquery.core.model.StrategyConfig;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 哈希分片策略实现
  */
 public class HashShardingStrategy implements ShardingStrategy {
-    
-    /**
-     * 数据源数量
-     */
-    private int dataSourceCount;
-    
-    /**
-     * 表数量
-     */
-    private int tableCount;
-    
-    /**
-     * 数据源前缀
-     */
-    private String dataSourcePrefix = "ds";
-    
-    /**
-     * 表前缀
-     */
-    private String tablePrefix = "t";
-    
+
     @Override
-    public ShardingResult doSharding(Object shardingKey, Map<String, Object> shardingParams) {
-        if (shardingKey == null) {
-            throw new IllegalArgumentException("Sharding key cannot be null");
+    public List<String> doSharding(ShardingRuleConfig shardingRuleConfig, List<SqlCondition> conditions) {
+        List<String> shardingResult = new ArrayList<>();
+        if (conditions.isEmpty()) {
+            return shardingResult;
         }
-        
-        int hashCode = shardingKey.hashCode();
-        
-        // 计算数据源索引
-        int dataSourceIndex = Math.abs(hashCode) % dataSourceCount;
-        String dataSourceName = dataSourcePrefix + dataSourceIndex;
-        
-        // 计算表索引
-        int tableIndex = Math.abs(hashCode) % tableCount;
-        String tableName = tablePrefix + tableIndex;
-        
-        return new ShardingResult(dataSourceName, tableName);
-    }
-    
-    @Override
-    public ShardingStrategyType getType() {
-        return ShardingStrategyType.HASH;
-    }
-    
-    @Override
-    public void init(Map<String, Object> config) {
-        if (config.containsKey("dataSourceCount")) {
-            dataSourceCount = (int) config.get("dataSourceCount");
+
+        String tableName = shardingRuleConfig.getTableName();
+        List<String> availableTableNames = shardingRuleConfig.getAvailableTableNames();
+        StrategyConfig strategyConfig = shardingRuleConfig.getStrategyConfig();
+        int shardingCount = strategyConfig.getShardingCount();
+        int shardingStart = strategyConfig.getShardingStart();
+
+        if (conditions.size() == 1) {
+            SqlCondition condition = conditions.get(0);
+            Object value = condition.getValue();
+            ConditionType conditionType = condition.getConditionType();
+            if (conditionType == ConditionType.EQUALS) {
+                Long hashValue = Long.parseLong(value.toString());
+                int hashIndex = (int) (hashValue % shardingCount);
+                hashIndex += shardingStart;
+                String physicalTableName = TableUtils.getPhysicalTableName(tableName, String.valueOf(hashIndex));
+                if (!availableTableNames.contains(physicalTableName)) {
+                    throw new IllegalArgumentException("Physical table name not available: " + physicalTableName);
+                }
+
+                shardingResult.add(physicalTableName);
+            } else if (conditionType == ConditionType.IN) {
+                for (Object item : (List<?>) value) {
+                    Long hashValue = Long.parseLong(item.toString());
+                    int hashIndex = (int) (hashValue % shardingCount);
+                    hashIndex += shardingStart;
+                    String physicalTableName = TableUtils.getPhysicalTableName(tableName, String.valueOf(hashIndex));
+                    if (!availableTableNames.contains(physicalTableName)) {
+                        throw new IllegalArgumentException("Physical table name not available: " + physicalTableName);
+                    }
+                    if (!shardingResult.contains(physicalTableName)) {
+                        shardingResult.add(physicalTableName);
+                    }
+                    if (shardingResult.size() == availableTableNames.size()) {
+                        break;
+                    }
+                }
+            } else {
+                shardingResult.addAll(availableTableNames);
+            }
         } else {
-            dataSourceCount = 2;
+            shardingResult.addAll(availableTableNames);
         }
-        
-        if (config.containsKey("tableCount")) {
-            tableCount = (int) config.get("tableCount");
-        } else {
-            tableCount = 4;
-        }
-        
-        if (config.containsKey("dataSourcePrefix")) {
-            dataSourcePrefix = (String) config.get("dataSourcePrefix");
-        }
-        
-        if (config.containsKey("tablePrefix")) {
-            tablePrefix = (String) config.get("tablePrefix");
-        }
+
+        return shardingResult;
     }
+
+    @Override
+    public StrategyType getType() {
+        return StrategyType.HASH;
+    }
+
 }

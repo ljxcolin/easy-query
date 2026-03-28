@@ -33,6 +33,12 @@
             <artifactId>commons-configuration2</artifactId>
             <version>${commons-configuration.version}</version>
         </dependency>
+        <!-- 集合工具 -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-collections4</artifactId>
+            <version>4.4</version>
+        </dependency>
         <!-- 日志 -->
         <!--<dependency>
             <groupId>org.apache.logging.log4j</groupId>
@@ -108,7 +114,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.10.1</version>
+                <version>3.13.0</version>
                 <configuration>
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>

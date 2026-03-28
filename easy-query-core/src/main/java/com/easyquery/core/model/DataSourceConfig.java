@@ -1,8 +1,11 @@
-package com.easyquery.web.model;
+package com.easyquery.core.model;
 
-public class DataSource {
+import com.easyquery.core.utils.UrlUtils;
+
+public class DataSourceConfig {
     private String name;
     private String url;
+    private String database;
     private String username;
     private String password;
     private String driverClassName;
@@ -23,6 +26,15 @@ public class DataSource {
 
     public void setUrl(String url) {
         this.url = url;
+        setDatabase(UrlUtils.extractDatabase(url));
+    }
+
+    public String getDatabase() {
+        return database;
+    }
+
+    public void setDatabase(String database) {
+        this.database = database;
     }
 
     public String getUsername() {
@@ -64,4 +76,5 @@ public class DataSource {
     public void setMinimumIdle(int minimumIdle) {
         this.minimumIdle = minimumIdle;
     }
+
 }

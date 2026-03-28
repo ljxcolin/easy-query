@@ -23,8 +23,8 @@
         <el-table-column prop="name" label="规则名称" width="150" show-overflow-tooltip />
         <el-table-column prop="strategyType" label="分片策略" width="120">
           <template #default="scope">
-            <el-tag :type="getStrategyTagType(scope.row.strategyType)" size="medium">{{ scope.row.strategyType
-            }}</el-tag>
+            <el-tag :type="getStrategyTagType(scope.row.strategyType)" size="small">{{ scope.row.strategyType
+              }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="dataSourceName" label="关联数据源" width="150">

@@ -4,10 +4,10 @@ import com.easyquery.web.entity.ShardingRuleEntity;
 import com.easyquery.web.repository.ShardingRuleRepository;
 import com.easyquery.web.service.ShardingRuleService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @Transactional
@@ -24,14 +24,14 @@ public class ShardingRuleServiceImpl implements ShardingRuleService {
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<ShardingRuleEntity> findById(Long id) {
-        return shardingRuleRepository.findById(id);
+    public ShardingRuleEntity findById(Long id) {
+        return shardingRuleRepository.findById(id).orElse(null);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<ShardingRuleEntity> findByName(String name) {
-        return shardingRuleRepository.findByName(name);
+    public ShardingRuleEntity findByName(String name) {
+        return shardingRuleRepository.findByName(name).orElse(null);
     }
 
     @Override
@@ -61,5 +61,16 @@ public class ShardingRuleServiceImpl implements ShardingRuleService {
     @Transactional(readOnly = true)
     public boolean existsByDataSourceIdAndTableName(Long dataSourceId, String tableName) {
         return shardingRuleRepository.existsByDataSourceIdAndTableName(dataSourceId, tableName);
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<ShardingRuleEntity> findByDataSourceId(Long dataSourceId) {
+        return shardingRuleRepository.findByDataSourceId(dataSourceId);
+    }
+
+    @Override
+    public boolean existsByDataSourceIdAndTableNameExcludingId(Long dataSourceId, String tableName, Long excludeId) {
+        return shardingRuleRepository.existsByDataSourceIdAndTableNameExcludingId(dataSourceId, tableName, excludeId);
     }
 }

@@ -35,9 +35,6 @@ public class ShardingRuleEntity {
     @Column(length = 256)
     private String description;
 
-    @Column(nullable = false)
-    private Integer status = 1;
-
     @Column(name = "created_time", nullable = false, updatable = false)
     private LocalDateTime createdTime;
 
@@ -125,14 +122,6 @@ public class ShardingRuleEntity {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public Integer getStatus() {
-        return status;
-    }
-
-    public void setStatus(Integer status) {
-        this.status = status;
     }
 
     public LocalDateTime getCreatedTime() {
