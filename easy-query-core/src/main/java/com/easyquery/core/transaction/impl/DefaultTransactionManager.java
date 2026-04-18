@@ -84,7 +84,7 @@ public class DefaultTransactionManager implements TransactionManager {
         Connection connection = transaction.getConnection(dataSourceName);
         if (connection == null || connection.isClosed()) {
             // 获取新连接并设置为手动提交
-            connection = databaseAdapter.getConnection(dataSourceName);
+            connection = databaseAdapter.getConnection();
             connection.setAutoCommit(false);
             transaction.addConnection(dataSourceName, connection);
         }

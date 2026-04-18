@@ -9,10 +9,6 @@ import com.easyquery.web.loader.DataSourceLoader;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -20,7 +16,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/data-sources")
-public class DataSourceController {
+public class DataSourceController extends BaseController {
 
     @Autowired
     private DataSourceService dataSourceService;

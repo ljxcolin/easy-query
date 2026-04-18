@@ -14,14 +14,14 @@ public class SqlQueryEntity {
     @Column(nullable = false, length = 64)
     private String name;
 
+    @Column(name = "data_source_id", nullable = false, length = 64)
+    private Long dataSourceId;
+
     @Column(name = "data_source_name", nullable = false, length = 64)
     private String dataSourceName;
 
     @Column(name = "sql_content", nullable = false, columnDefinition = "TEXT")
     private String sqlContent;
-
-    @Column(name = "sharding_key", length = 64)
-    private String shardingKey;
 
     @Column(columnDefinition = "TEXT")
     private String description;
@@ -59,6 +59,14 @@ public class SqlQueryEntity {
         this.name = name;
     }
 
+    public Long getDataSourceId() {
+        return dataSourceId;
+    }
+
+    public void setDataSourceId(Long dataSourceId) {
+        this.dataSourceId = dataSourceId;
+    }
+
     public String getDataSourceName() {
         return dataSourceName;
     }
@@ -73,14 +81,6 @@ public class SqlQueryEntity {
 
     public void setSqlContent(String sqlContent) {
         this.sqlContent = sqlContent;
-    }
-
-    public String getShardingKey() {
-        return shardingKey;
-    }
-
-    public void setShardingKey(String shardingKey) {
-        this.shardingKey = shardingKey;
     }
 
     public String getDescription() {

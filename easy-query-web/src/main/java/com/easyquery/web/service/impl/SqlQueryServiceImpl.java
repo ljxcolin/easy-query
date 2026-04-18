@@ -29,8 +29,8 @@ public class SqlQueryServiceImpl implements SqlQueryService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<SqlQueryEntity> findByDataSourceName(String dataSourceName) {
-        return sqlQueryRepository.findByDataSourceName(dataSourceName);
+    public List<SqlQueryEntity> findByDataSourceId(Long dataSourceId) {
+        return sqlQueryRepository.findByDataSourceId(dataSourceId);
     }
 
     @Override

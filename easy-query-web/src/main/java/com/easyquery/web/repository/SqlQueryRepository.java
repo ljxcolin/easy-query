@@ -8,7 +8,7 @@ import java.util.Optional;
 
 @Repository
 public interface SqlQueryRepository extends JpaRepository<SqlQueryEntity, Long> {
-    List<SqlQueryEntity> findByDataSourceName(String dataSourceName);
+    List<SqlQueryEntity> findByDataSourceId(Long dataSourceId);
     Optional<SqlQueryEntity> findByName(String name);
     boolean existsByName(String name);
 }

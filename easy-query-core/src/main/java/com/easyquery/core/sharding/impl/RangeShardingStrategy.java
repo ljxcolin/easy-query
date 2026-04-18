@@ -23,4 +23,10 @@ public class RangeShardingStrategy implements ShardingStrategy {
     public StrategyType getType() {
         return StrategyType.RANGE;
     }
+
+    @Override
+    public void setAvailableTables(ShardingRuleConfig shardingRuleConfig, List<String> tables) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'setAvailableTables'");
+    }
 }

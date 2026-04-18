@@ -15,7 +15,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/sql")
-public class SqlController {
+public class SqlController extends BaseController {
 
     @Autowired
     private SqlExecutorService sqlExecutorService;
@@ -39,6 +39,7 @@ public class SqlController {
             
             return Response.success(results);
         } catch (Exception e) {
+            logger.error("查询执行失败", e);
             return Response.error(500, "查询执行失败：" + e.getMessage());
         }
     }

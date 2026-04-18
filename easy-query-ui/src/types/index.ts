@@ -63,8 +63,8 @@ export interface SqlQuery {
   id?: number;
   name: string;
   dataSourceId: number;
+  dataSourceName?: string;
   sqlContent: string;
-  shardingKey?: string;
   description?: string;
   createdTime?: string;
   updatedTime?: string;

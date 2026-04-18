@@ -1,5 +1,6 @@
 package com.easyquery.web.controller;
 
+import com.easyquery.core.model.DataSourceEntry;
 import com.easyquery.web.entity.ShardingRuleEntity;
 import com.easyquery.web.model.Response;
 import com.easyquery.web.service.ShardingRuleService;
@@ -14,7 +15,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/sharding-rules")
-public class ShardingRuleController {
+public class ShardingRuleController extends BaseController {
 
     @Autowired
     private ShardingRuleService shardingRuleService;
@@ -66,11 +67,13 @@ public class ShardingRuleController {
         }
         
         // 检查数据源是否存在
-        if (dataSourceLoader.getDatabaseAdapter(shardingRule.getDataSourceName()) == null) {
-            return Response.error(400, "数据源不存在：" + shardingRule.getDataSourceName());
+        DataSourceEntry entry = dataSourceLoader.getDataSourceEntry(shardingRule.getDataSourceId());
+        if (entry == null) {
+            return Response.error(400, "数据源不存在：" + shardingRule.getDataSourceId());
         }
         
         // 保存到数据库
+        shardingRule.setDataSourceName(entry.getDataSourceConfig().getName());
         ShardingRuleEntity saved = shardingRuleService.save(shardingRule);
         
         // 动态加载到运行时环境

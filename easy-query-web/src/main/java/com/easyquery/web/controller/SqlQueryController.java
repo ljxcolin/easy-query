@@ -12,7 +12,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/sql-queries")
-public class SqlQueryController {
+public class SqlQueryController extends BaseController {
 
     @Autowired
     private SqlQueryService sqlQueryService;
@@ -41,9 +41,9 @@ public class SqlQueryController {
     /**
      * 根据数据源名称获取SQL查询列表
      */
-    @GetMapping("/data-source/{dataSourceName}")
-    public Response<List<SqlQueryEntity>> getSqlQueriesByDataSourceName(@PathVariable("dataSourceName") String dataSourceName) {
-        List<SqlQueryEntity> sqlQueries = sqlQueryService.findByDataSourceName(dataSourceName);
+    @GetMapping("/data-source/{dataSourceId}")
+    public Response<List<SqlQueryEntity>> getSqlQueriesByDataSourceId(@PathVariable("dataSourceId") Long dataSourceId) {
+        List<SqlQueryEntity> sqlQueries = sqlQueryService.findByDataSourceId(dataSourceId);
         return Response.success(sqlQueries);
     }
 

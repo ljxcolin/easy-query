@@ -19,6 +19,13 @@ public interface ShardingStrategy {
     List<String> doSharding(ShardingRuleConfig shardingRuleConfig, List<SqlCondition> conditions);
     
     /**
+     * 设置可用的物理表名
+     * @param shardingRuleConfig 分片规则配置
+     * @param tables 可用的物理表名列表
+     */
+    void setAvailableTables(ShardingRuleConfig shardingRuleConfig, List<String> tables);
+
+    /**
      * 获取分片策略类型
      * @return 分片策略类型
      */

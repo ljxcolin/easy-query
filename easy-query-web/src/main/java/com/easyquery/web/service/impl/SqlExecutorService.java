@@ -8,6 +8,9 @@ import com.easyquery.core.parser.SqlParseResult;
 import com.easyquery.core.rewriter.SqlRewriter;
 import com.easyquery.core.result.ResultHandler;
 import com.easyquery.web.loader.DataSourceLoader;
+
+import net.sf.jsqlparser.JSQLParserException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,11 +71,16 @@ public class SqlExecutorService {
         // 3. 解析 SQL
         SqlParseResult parseResult = sqlParser.parse(sql);
         if (parseResult.getSqlType() != SqlType.SELECT) {
-            throw new IllegalArgumentException("该方法仅用于执行 SELECT 查询");
+            throw new SQLException("该方法仅用于执行 SELECT 查询");
         }
 
         // 4. 重写 SQL 并执行
-        String rewrittenSql = sqlRewriter.rewrite(entry, parseResult);
+        String rewrittenSql;
+        try {
+            rewrittenSql = sqlRewriter.rewrite(entry, parseResult);
+        } catch (JSQLParserException e) {
+            throw new SQLException("SQL 解析失败", e);
+        }
         logger.info("重写后的 SQL: {}", rewrittenSql);
 
         List<Map<String, Object>> allResults = new ArrayList<>();
@@ -92,23 +100,28 @@ public class SqlExecutorService {
 
             logger.info("查询完成，返回 {} 条记录", results.size());
 
+        } catch (SQLException e) {
+            throw new SQLException("执行查询 SQL 失败", e);
         } finally {
             // 释放资源
-            if (rs != null)
+            if (rs != null) {
                 try {
                     rs.close();
                 } catch (SQLException e) {
                 }
-            if (stmt != null)
+            }
+            if (stmt != null) {
                 try {
                     stmt.close();
                 } catch (SQLException e) {
                 }
-            if (conn != null)
+            }
+            if (conn != null) {
                 try {
                     adapter.releaseConnection(conn);
                 } catch (SQLException e) {
                 }
+            }
         }
 
         return allResults;
@@ -140,7 +153,12 @@ public class SqlExecutorService {
         }
 
         // 4. 重写 SQL 并执行
-        String rewrittenSql = sqlRewriter.rewrite(entry, parseResult);
+        String rewrittenSql;
+        try {
+            rewrittenSql = sqlRewriter.rewrite(entry, parseResult);
+        } catch (JSQLParserException e) {
+            throw new SQLException("SQL 解析失败", e);
+        }
         logger.info("重写后的 SQL: {}", rewrittenSql);
 
         int totalRows = 0;

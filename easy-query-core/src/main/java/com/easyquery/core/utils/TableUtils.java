@@ -5,7 +5,7 @@ package com.easyquery.core.utils;
  */
 public class TableUtils {
 
-    private static final String SEPARATOR = "_";
+    public static final String SEPARATOR = "_";
 
     /**
      * 根据逻辑表名和后缀拼接物理表名（默认使用下划线连接）
@@ -56,6 +56,10 @@ public class TableUtils {
             return physicalTableName.substring(lastIndex + 1);
         }
         return "";
+    }
+
+    public static String getPrefix(String logicalTableName) {
+        return logicalTableName.concat(SEPARATOR);
     }
 
 }

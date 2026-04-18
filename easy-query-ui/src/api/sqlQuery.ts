@@ -6,9 +6,9 @@ export default {
   getAllSqlQueries(): Promise<Response<SqlQuery[]>> {
     return request.get('/sql-queries');
   },
-  // 根据数据源名称获取SQL查询列表
-  getSqlQueriesByDataSourceName(dataSourceName: string): Promise<Response<SqlQuery[]>> {
-    return request.get(`/sql-queries/data-source/${dataSourceName}`);
+  // 根据数据源ID获取SQL查询列表
+  getSqlQueriesByDataSourceId(dataSourceId: number): Promise<Response<SqlQuery[]>> {
+    return request.get(`/sql-queries/data-source/${dataSourceId}`);
   },
   // 获取单个SQL查询
   getSqlQueryById(id: number): Promise<Response<SqlQuery>> {

@@ -1,6 +1,9 @@
 package com.easyquery.core.model;
 
 import com.easyquery.core.adapter.DatabaseAdapter;
+import com.easyquery.core.sharding.ShardingStrategy;
+import com.easyquery.core.sharding.ShardingStrategyFactory;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,12 +73,10 @@ public class DataSourceEntry {
             for (ShardingRuleConfig ruleConfig : shardingRuleConfigs) {
                 String tableName = ruleConfig.getTableName();
                 if (tableName != null && !tableName.isEmpty()) {
-                    List<String> availableTables = allTables.stream()
-                            .filter(table -> table.startsWith(tableName))
-                            .collect(Collectors.toList());
-                    ruleConfig.setAvailableTableNames(availableTables);
+                    ShardingStrategy shardingStrategy = ShardingStrategyFactory.getShardingStrategy(ruleConfig.getStrategyType());
+                    shardingStrategy.setAvailableTables(ruleConfig, allTables);
                     logger.info("分片规则 [{}] 匹配到 {} 个可用表: {}",
-                            tableName, availableTables.size(), availableTables);
+                            tableName, ruleConfig.getAvailableTableNames().size(), ruleConfig.getAvailableTableNames());    
                 }
             }
         }

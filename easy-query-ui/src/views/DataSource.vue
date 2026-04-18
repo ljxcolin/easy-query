@@ -124,6 +124,7 @@ const formRules: FormRules = {
 
 // 表单数据
 const form = reactive<DataSource>({
+  id: undefined,
   name: '',
   url: '',
   username: '',
@@ -238,6 +239,7 @@ const handleViewDetail = (row: DataSource) => {
 };
 
 const resetForm = () => {
+  form.id = undefined;
   form.name = '';
   form.url = '';
   form.username = '';

@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -28,7 +29,7 @@ public class DefaultResultHandler implements ResultHandler {
         int columnCount = metaData.getColumnCount();
         
         while (resultSet.next()) {
-            Map<String, Object> row = new HashMap<>();
+            Map<String, Object> row = new LinkedHashMap<>();
             for (int i = 1; i <= columnCount; i++) {
                 String columnName = metaData.getColumnName(i);
                 Object value = resultSet.getObject(i);

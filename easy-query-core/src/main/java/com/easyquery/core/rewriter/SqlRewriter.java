@@ -3,6 +3,8 @@ package com.easyquery.core.rewriter;
 import com.easyquery.core.model.DataSourceEntry;
 import com.easyquery.core.parser.SqlParseResult;
 
+import net.sf.jsqlparser.JSQLParserException;
+
 /**
  * @author lijinxuan
  * @date 2026/3/11 9:52
@@ -15,6 +17,6 @@ public interface SqlRewriter {
      * @param params SQL 参数
      * @return 重写后的 SQL
      */
-    String rewrite(DataSourceEntry dataSourceEntry, SqlParseResult sqlParseResult);
+    String rewrite(DataSourceEntry dataSourceEntry, SqlParseResult sqlParseResult) throws JSQLParserException;
     
 }

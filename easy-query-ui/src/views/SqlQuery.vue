@@ -1,58 +1,60 @@
 <template>
   <div class="sql-query-container">
     <div class="left-panel">
-      <el-tabs v-model="activeTab" class="left-tabs">
-        <el-tab-pane label="数据源" name="datasource">
-          <div class="datasource-content">
-            <el-select v-model="selectedDataSource" placeholder="选择数据源" style="width: 100%; margin-bottom: 10px" @change="handleDataSourceChange">
-              <el-option v-for="ds in dataSources" :key="ds.name" :label="ds.name" :value="ds.name" />
-            </el-select>
-            <div class="table-list-header">
-              <span>数据表</span>
-            </div>
-            <div class="table-list">
-              <div class="table-item" v-for="table in tables" :key="table" @click="handleTableClick(table)">
-                <el-icon><Document /></el-icon>
-                <span>{{ table }}</span>
-              </div>
+      <div class="datasource-header">
+        <el-select v-model="selectedDataSource" placeholder="选择数据源" style="width: 100%"
+          @change="handleDataSourceChange">
+          <el-option v-for="ds in dataSources" :key="ds.name" :label="ds.name" :value="ds.name" />
+        </el-select>
+      </div>
+      <el-tabs v-model="activeTab" class="left-tabs" @tab-click="handleTabClick">
+        <el-tab-pane label="数据表" name="tables">
+          <div class="table-list">
+            <div class="table-item" v-for="table in tables" :key="table" @click="handleTableClick(table)">
+              <el-icon>
+                <Document />
+              </el-icon>
+              <span>{{ table }}</span>
             </div>
           </div>
         </el-tab-pane>
-        <el-tab-pane label="我的SQL" name="savedSql">
-          <div class="saved-sql-content">
-            <el-button type="primary" size="small" @click="handleAddNewTab" style="width: 100%; margin-bottom: 10px">新建查询</el-button>
-            <div class="sql-list">
-              <div class="sql-item" v-for="sql in savedSqlQueries" :key="sql.id" @click="handleUseSavedSql(sql)">
-                <div class="sql-name">{{ sql.name }}</div>
-                <div class="sql-preview">{{ sql.sqlContent.substring(0, 50) }}{{ sql.sqlContent.length > 50 ? '...' : '' }}</div>
-              </div>
+        <el-tab-pane label="查询" name="sql-query">
+          <div class="sql-list">
+            <div class="sql-item" v-for="sql in savedSqlQueries" :key="sql.id" @click="handleUseSavedSql(sql)">
+              <div class="sql-name">{{ sql.name }}</div>
+              <div class="sql-preview">{{ sql.sqlContent.substring(0, 50) }}{{ sql.sqlContent.length > 50 ? '...' : ''
+              }}</div>
             </div>
           </div>
         </el-tab-pane>
       </el-tabs>
     </div>
-    
+
     <div class="right-panel">
-      <el-tabs v-model="activeEditorTab" type="card" editable @tab-remove="handleRemoveTab" @edit="handleTabEdit" class="editor-tabs">
-        <el-tab-pane v-for="tab in editorTabs" :key="tab.id" :label="tab.title" :name="tab.id">
-          <div class="editor-wrapper">
-            <div :ref="el => setEditorRef(el, tab.id)" class="editor"></div>
-            <div class="button-bar">
-              <el-button type="info" size="small" @click="handleCheckSql(tab)">检查语法</el-button>
-              <el-button type="primary" size="small" @click="handleExecuteQuery(tab)" :loading="tab.executing">执行查询</el-button>
-              <el-button size="small" @click="openSaveDialog(tab)">保存</el-button>
+      <div class="editor-tabs-container">
+        <el-tabs v-model="activeEditorTab" type="card" closable @tab-remove="handleRemoveEditorTab" class="editor-tabs">
+          <el-tab-pane v-for="tab in editorTabs" :key="tab.id" :label="tab.title" :name="tab.id">
+            <div v-if="tab.id === activeEditorTab" class="editor-wrapper">
+              <div :ref="el => setEditorRef(el, tab.id)" class="editor"></div>
+              <div class="button-bar">
+                <el-button type="info" @click="handleCheckSql(tab)">检查</el-button>
+                <el-button type="primary" @click="handleExecuteQuery(tab)" :loading="tab.executing">执行</el-button>
+                <el-button type="success" @click="openSaveDialog(tab)">保存</el-button>
+                <el-button type="danger" @click="handleAddNewEditorTab">新增</el-button>
+              </div>
+              <div class="result-container" v-if="tab.result && tab.result.length > 0">
+                <el-table :data="tab.result" style="width: 100%" max-height="300" border scrollbar-always-on>
+                  <el-table-column v-for="(_, key) in tab.result[0]" :key="key" :prop="key as string"
+                    :label="key as string" show-overflow-tooltip />
+                </el-table>
+              </div>
+              <div class="message" v-if="tab.message" :class="tab.messageType">
+                {{ tab.message }}
+              </div>
             </div>
-            <div class="result-container" v-if="tab.result && tab.result.length > 0">
-              <el-table :data="tab.result" style="width: 100%" max-height="300">
-                <el-table-column v-for="(value, key) in tab.result[0]" :key="key as string" :prop="key as string" :label="key as string" />
-              </el-table>
-            </div>
-            <div class="message" v-if="tab.message" :class="tab.messageType">
-              {{ tab.message }}
-            </div>
-          </div>
-        </el-tab-pane>
-      </el-tabs>
+          </el-tab-pane>
+        </el-tabs>
+      </div>
     </div>
 
     <el-dialog v-model="saveDialogVisible" title="保存SQL查询" width="400px">
@@ -96,7 +98,7 @@ const dataSources = ref<DataSource[]>([]);
 const selectedDataSource = ref<string>('');
 const selectedDataSourceId = ref<number>(0);
 const tables = ref<string[]>([]);
-const activeTab = ref('datasource');
+const activeTab = ref('tables');
 const activeEditorTab = ref<string>('');
 const editorTabs = ref<EditorTab[]>([]);
 const savedSqlQueries = ref<SqlQuery[]>([]);
@@ -120,8 +122,11 @@ const setEditorRef = (el: any, tabId: string) => {
   if (el && !isUnmounted) {
     editorRefs.set(tabId, el);
     setTimeout(() => {
-      initTabEditor(tabId);
-    }, 0);
+      initEditorTab(tabId);
+    }, 1000);
+    // nextTick(() => {
+    //   initEditorTab(tabId);
+    // });
   }
 };
 
@@ -143,8 +148,12 @@ const loadDataSources = async () => {
 };
 
 const loadSavedSqlQueries = async () => {
+  if (!selectedDataSourceId.value) {
+    savedSqlQueries.value = [];
+    return;
+  }
   try {
-    const response = await sqlQueryApi.getAllSqlQueries();
+    const response = await sqlQueryApi.getSqlQueriesByDataSourceId(selectedDataSourceId.value);
     if (response.code === 200) {
       savedSqlQueries.value = response.data || [];
     }
@@ -158,6 +167,15 @@ const handleDataSourceChange = async (val: string) => {
   selectedDataSource.value = val;
   selectedDataSourceId.value = ds?.id || 0;
   await loadTables(ds?.id || 0);
+  await loadSavedSqlQueries();
+};
+
+const handleTabClick = async (tab: any) => {
+  if (tab.props?.name === 'tables' && selectedDataSourceId.value) {
+    await loadTables(selectedDataSourceId.value);
+  } else if (tab.props?.name === 'sql-query' && selectedDataSourceId.value) {
+    await loadSavedSqlQueries();
+  }
 };
 
 const loadTables = async (dataSourceId: number) => {
@@ -173,12 +191,12 @@ const loadTables = async (dataSourceId: number) => {
 
 const handleTableClick = (table: string) => {
   const sql = `SELECT * FROM \`${table}\` LIMIT 100;`;
-  handleAddNewTab(sql);
+  handleAddNewEditorTab(sql);
 };
 
-const handleAddNewTab = (sqlContent: string = 'SELECT * FROM ') => {
+const handleAddNewEditorTab = (sqlContent: string = 'SELECT * FROM ') => {
   if (isUnmounted) return;
-  
+
   tabCounter++;
   const newTab: EditorTab = {
     id: `tab-${tabCounter}`,
@@ -189,14 +207,23 @@ const handleAddNewTab = (sqlContent: string = 'SELECT * FROM ') => {
     messageType: '',
     executing: false
   };
+  // 卸载当前编辑器实例
+  // if (activeEditorTab.value) {
+  //   const editor = editorInstances.get(activeEditorTab.value);
+  //   if (editor) {
+  //     editor.dispose();
+  //     editorInstances.delete(activeEditorTab.value);
+  //   }
+  //   activeEditorTab.value = '';
+  // }
   editorTabs.value.push(newTab);
   activeEditorTab.value = newTab.id;
-  nextTick(() => {
-    initTabEditor(newTab.id);
-  });
+  // nextTick(() => {
+  //   initEditorTab(newTab.id);
+  // });
 };
 
-const handleRemoveTab = (tabId: string) => {
+const handleRemoveEditorTab = (tabId: string) => {
   const index = editorTabs.value.findIndex(t => t.id === tabId);
   if (index !== -1) {
     const editor = editorInstances.get(tabId);
@@ -212,43 +239,110 @@ const handleRemoveTab = (tabId: string) => {
   }
 };
 
-const handleTabEdit = (targetName: string | null, action: string) => {
-  if (action === 'add') {
-    handleAddNewTab();
+// const handleEditorTabChange = (tabId: string) => {
+//   console.log('切换到标签:', tabId);
+//   const editor = editorInstances.get(tabId);
+//   if (editor) {
+//     nextTick(() => {
+//       editor.layout();
+//     });
+//   } else {
+//     setTimeout(() => {
+//       initEditorTab(tabId);
+//     }, 100);
+//   }
+// };
+
+const initEditorTab = (tabId: string) => {
+  if (isUnmounted) return;
+
+  if (!monaco.editor.getModel) {
+    console.log('Monaco 未就绪，延迟初始化');
+    setTimeout(() => initEditorTab(tabId), 100);
+    return;
+  }
+
+  console.log('初始化编辑器:', tabId);
+
+  const el = editorRefs.get(tabId);
+  if (!el) return;
+
+  // 清理可能存在的旧 model
+  const existingModels = monaco.editor.getModels();
+  for (const model of existingModels) {
+    if (model.uri.toString().includes(tabId)) {
+      model.dispose();
+    }
+  }
+
+  if (!el.offsetParent || el.offsetWidth === 0 || el.offsetHeight === 0) {
+    console.log('编辑器容器不可见，销毁编辑器');
+    disposeEditorTab(tabId);
+    return;
+  }
+
+  // 如果旧的编辑器实例存在，先销毁它
+  disposeEditorTab(tabId);
+
+  const tab = editorTabs.value.find(t => t.id === tabId);
+  if (!tab) {
+    return;
+  }
+
+  try {
+    const editor = monaco.editor.create(el, {
+      value: tab.sqlContent,
+      language: 'sql',
+      theme: 'vs',
+      // ============ 性能优化核心配置 ============
+      automaticLayout: false,        // 关闭自动布局（最大卡顿源）
+      minimap: { enabled: false },   // 关闭小地图
+      folding: false,                // 关闭代码折叠
+      renderLineHighlight: 'none',   // 关闭行高亮
+      scrollBeyondLastLine: false,   // 禁止滚动超出
+      wordWrap: 'off',               // 关闭自动换行
+      overviewRulerLanes: 0,         // 关闭右侧标记
+      lineNumbersMinChars: 3,        // 固定行号
+      // 关闭耗性能的提示功能
+      quickSuggestions: false,
+      // suggest: false,
+      acceptSuggestionOnEnter: 'off',
+      tabCompletion: 'off',
+      wordBasedSuggestions: 'off',
+      hover: { enabled: false },
+      parameterHints: { enabled: false },
+      suggestOnTriggerCharacters: false
+    });
+
+    editorInstances.set(tabId, editor);
+    console.log('编辑器初始化成功:', tabId);
+  } catch (error) {
+    console.error('编辑器初始化失败:', error);
   }
 };
 
-const initTabEditor = (tabId: string) => {
-  if (isUnmounted) return;
-  
-  const tab = editorTabs.value.find(t => t.id === tabId);
-  if (!tab) return;
-  
+const disposeEditorTab = (tabId: string) => {
+  const editor = editorInstances.get(tabId);
+  if (editor) {
+    editor.dispose();
+    editorInstances.delete(tabId);
+  }
   const el = editorRefs.get(tabId);
-  if (!el || editorInstances.has(tabId)) return;
-  
-  const editor = monaco.editor.create(el, {
-    value: tab.sqlContent,
-    language: 'sql',
-    theme: 'vs',
-    fontSize: 14,
-    // ============ 性能优化核心配置 ============
-    automaticLayout: false,        // 关闭自动布局（最大卡顿源）
-    minimap: { enabled: false },   // 关闭小地图
-    folding: false,                // 关闭代码折叠
-    renderLineHighlight: 'none',   // 关闭行高亮
-    scrollBeyondLastLine: false,   // 禁止滚动超出
-    wordWrap: 'off',               // 关闭自动换行
-    overviewRulerLanes: 0,         // 关闭右侧标记
-    lineNumbersMinChars: 3,        // 固定行号
-    // 关闭耗性能的提示功能
-    quickSuggestions: false,
-    hover: { enabled: false },
-    parameterHints: { enabled: false },
-    suggestOnTriggerCharacters: false
-  });
-  
-  editorInstances.set(tabId, editor);
+  if (el) {
+    el.innerHTML = '';
+    el.removeAttribute('data-monaco-editor');
+    el.removeAttribute('editor');
+    el.classList.remove('monaco-editor');
+    const placeholder = el.querySelector('.monaco-editor-placeholder');
+    if (placeholder) {
+      placeholder.remove();
+    }
+  }
+  // 清理 Monaco 的 model
+  const model = monaco.editor.getModels().find(m => m.uri.toString().includes(tabId));
+  if (model) {
+    model.dispose();
+  }
 };
 
 const handleCheckSql = (tab: EditorTab) => {
@@ -280,19 +374,20 @@ const openSaveDialog = (tab: EditorTab) => {
 
 const confirmSaveSql = async () => {
   if (!saveFormRef.value) return;
-  
+
   try {
     await saveFormRef.value.validate();
     if (currentSavingTab) {
       const editor = editorInstances.get(currentSavingTab.id);
       const sqlContent = editor?.getValue().trim() || '';
       const sqlQuery: SqlQuery = {
-        name: saveForm.value.name,
         dataSourceId: selectedDataSourceId.value,
+        dataSourceName: selectedDataSource.value,
+        name: saveForm.value.name,
         sqlContent: sqlContent,
         description: saveForm.value.description
       };
-      
+
       const response = await sqlQueryApi.createSqlQuery(sqlQuery);
       if (response.code === 200) {
         ElMessage.success('保存成功');
@@ -314,27 +409,28 @@ const confirmSaveSql = async () => {
 const handleExecuteQuery = async (tab: EditorTab) => {
   const editor = editorInstances.get(tab.id);
   if (!editor) return;
-  
+
   const sql = editor.getValue().trim();
   if (!sql) {
     ElMessage.warning('请输入 SQL 语句');
     return;
   }
-  
+
   if (!selectedDataSource.value) {
     ElMessage.warning('请选择数据源');
     return;
   }
-  
+
+  tab.sqlContent = sql;
   tab.executing = true;
   tab.message = '';
-  
+
   try {
     const sqlRequest: SqlRequest = {
       sql: sql,
       dataSourceId: selectedDataSourceId.value
     };
-    
+
     const response = await sqlApi.executeQuery(sqlRequest);
     if (response.code === 200) {
       tab.result = response.data || [];
@@ -369,16 +465,16 @@ const handleUseSavedSql = (sql: SqlQuery) => {
   };
   editorTabs.value.push(newTab);
   activeEditorTab.value = newTab.id;
-  nextTick(() => {
-    initTabEditor(newTab.id);
-  });
+  // nextTick(() => {
+  //   initEditorTab(newTab.id);
+  // });
 };
 
 onMounted(() => {
   isUnmounted = false;
   loadDataSources();
   loadSavedSqlQueries();
-  handleAddNewTab();
+  handleAddNewEditorTab();
 });
 
 onUnmounted(() => {
@@ -405,10 +501,22 @@ onUnmounted(() => {
   background: #fff;
   border-radius: 4px;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.datasource-header {
+  padding: 10px;
+  border-bottom: 1px solid #e4e7ed;
 }
 
 .left-tabs {
-  height: 100%;
+  flex: 1;
+  height: auto;
+}
+
+.left-tabs :deep(.el-tabs__item) {
+  padding: 0 15px !important;
 }
 
 .left-tabs :deep(.el-tabs__content) {
@@ -416,19 +524,9 @@ onUnmounted(() => {
   overflow-y: auto;
 }
 
-.datasource-content, .saved-sql-content {
-  padding: 10px;
-}
-
-.table-list-header {
-  font-weight: 500;
-  margin: 10px 0;
-  color: #303133;
-}
-
 .table-list {
-  margin-top: 10px;
-  max-height: calc(100% - 100px);
+  padding: 10px;
+  height: 100%;
   overflow-y: auto;
 }
 
@@ -484,6 +582,7 @@ onUnmounted(() => {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .editor-tabs {
@@ -494,31 +593,74 @@ onUnmounted(() => {
 
 .editor-tabs :deep(.el-tabs__content) {
   flex: 1;
-  overflow: auto;
+  overflow-x: auto;
+  overflow-y: auto;
   padding: 0;
-}
-
-.editor-tabs :deep(.el-tab-pane) {
-  height: 100%;
 }
 
 .editor-tabs :deep(.el-tabs__header) {
   margin: 0;
-  padding: 8px 10px 0;
   background: #f5f7fa;
   border-bottom: 1px solid #e4e7ed;
 }
 
+.editor-tabs :deep(.el-tabs__nav-wrap) {
+  flex: 1;
+}
+
 .editor-tabs :deep(.el-tabs__item) {
-  height: 36px;
-  line-height: 36px;
+  height: 32px;
+  line-height: 32px;
   border-radius: 4px 4px 0 0;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.editor-tabs :deep(.el-tabs__item)::after {
+  display: none;
+}
+
+.editor-tabs-container {
+  display: flex;
+  align-items: flex-start;
+  height: 100%;
+}
+
+.editor-tabs-container>.editor-tabs {
+  height: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.editor-tabs-container>.editor-tabs :deep(.el-tabs__header) {
+  flex-shrink: 0;
+}
+
+.editor-tabs-container>.editor-tabs :deep(.el-tabs__content) {
+  flex: 1;
+  overflow: hidden;
+}
+
+.editor-tabs-container>.editor-tabs :deep(.el-tab-pane) {
+  height: 100%;
+}
+
+.tab-title {
+  display: inline-block;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .editor-tabs :deep(.is-scrollable) {
+
   .el-tabs__nav-next,
   .el-tabs__nav-prev {
-    line-height: 36px;
+    line-height: 32px;
   }
 }
 
@@ -526,6 +668,7 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-width: 0;
 }
 
 .editor {
@@ -543,7 +686,8 @@ onUnmounted(() => {
 
 .result-container {
   flex: 1;
-  overflow: auto;
+  overflow-x: auto;
+  overflow-y: auto;
   padding: 10px;
 }
 

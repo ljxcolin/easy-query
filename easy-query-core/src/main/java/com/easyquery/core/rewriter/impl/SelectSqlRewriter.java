@@ -10,6 +10,7 @@ import com.easyquery.core.model.ShardingRuleConfig;
 import com.easyquery.core.sharding.ShardingStrategyFactory;
 import com.easyquery.core.sharding.ShardingStrategy;
 import com.easyquery.core.sharding.SqlCondition;
+import com.easyquery.core.utils.TableUtils;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.DoubleValue;
@@ -24,6 +25,7 @@ import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
+import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
 import net.sf.jsqlparser.expression.operators.relational.MinorThan;
 import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
@@ -39,7 +41,9 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.select.SetOperation;
+import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.statement.select.SubSelect;
+import net.sf.jsqlparser.statement.select.UnionOp;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
@@ -71,8 +75,8 @@ public class SelectSqlRewriter implements SqlRewriter {
      * @return 重写后的 SQL 语句
      */
     @Override
-    public String rewrite(DataSourceEntry entry, SqlParseResult parseResult) {
-        if (entry == null || entry.getShardingRuleConfigs() == null || entry.getShardingRuleConfigs().isEmpty()) {
+    public String rewrite(DataSourceEntry entry, SqlParseResult parseResult) throws JSQLParserException {
+        if (entry == null || CollectionUtils.isEmpty(entry.getShardingRuleConfigs())) {
             logger.debug("数据源无可用分片策略，直接返回原SQL");
             return parseResult.getOriginalSql();
         }
@@ -87,18 +91,83 @@ public class SelectSqlRewriter implements SqlRewriter {
             if (fromItem instanceof Table) {
                 Table fromTable = (Table) fromItem;
                 SqlRewriteResult result = doRewrite(entry, parseResult, plainSelect, fromTable);
-                if (result != null) {
-                    return result.getStatements().get(0).toString();
+                if (result != null && CollectionUtils.isNotEmpty(result.getStatements())) {
+                    return buildUnionSql(result.getStatements());
                 }
             }
+        }else if (selectBody instanceof SetOperationList) {
+            SetOperationList setOperationList = (SetOperationList) selectBody;
+            if(CollectionUtils.isNotEmpty(setOperationList.getSelects())){
+                return rewriteSetOperation(entry, setOperationList);
+            }
         }
-        if (statement instanceof SetOperation) {
-            SetOperation setOperation = (SetOperation) statement;
+        
+        return parseResult.getOriginalSql();
+    }
 
+    /**
+     * 重写SetOperationList（UNION/UNION ALL/INTERSECT/EXCEPT等）
+     * 
+     * @param entry 数据源条目
+     * @param setOperationList UNION操作列表
+     * @return 重写后的SQL
+     */
+    private String rewriteSetOperation(DataSourceEntry entry, SetOperationList setOperationList) throws JSQLParserException {
+        List<SelectBody> originalSelects = setOperationList.getSelects();
+        
+        List<SelectBody> rewrittenSelects = new ArrayList<>();
+        
+        for (SelectBody selectBody : originalSelects) {
+            SqlParseResult parseResult = sqlParser.parse(selectBody.toString());
+            String rewrittenSql = rewrite(entry, parseResult);
+            Statement rewrittenStatement = CCJSqlParserUtil.parse(rewrittenSql);
+            rewrittenSelects.add(((Select) rewrittenStatement).getSelectBody());
+        }
+        
+        SetOperationList newSetOperationList = new SetOperationList();
+        newSetOperationList.setSelects(rewrittenSelects);
+        newSetOperationList.setOperations(setOperationList.getOperations());
+        
+        Select finalSelect = new Select();
+        finalSelect.setSelectBody(newSetOperationList);
+        
+        return finalSelect.toString();
+    }
+
+    /**
+     * 将多个Statement使用UNION ALL连接
+     * 
+     * @param statements 重写后的Statement列表
+     * @return 使用UNION ALL连接的SQL语句
+     */
+    private String buildUnionSql(List<Statement> statements) {
+        if (statements.size() == 1) {
+            return statements.get(0).toString();
         }
 
-        // Step 3: 组装成完整的 SQL
-        return null;
+        // 创建SetOperationList来组合多个SELECT
+        SetOperationList setOperationList = new SetOperationList();
+        List<SelectBody> selects = new ArrayList<>();
+        List<SetOperation> operations = new ArrayList<>();
+        int size = statements.size();
+        int last = size - 1;
+        for (int i = 0; i < size; i++) {
+            Select select = (Select) statements.get(i);
+            selects.add(select.getSelectBody());
+            if (i < last) {
+                // 设置操作类型为UNION ALL
+                UnionOp unionOp = new UnionOp().withAll(true);
+                operations.add(unionOp);
+            }
+        }
+        setOperationList.setSelects(selects);
+        setOperationList.setOperations(operations);
+
+        // 构建最终的SELECT语句
+        Select finalSelect = new Select();
+        finalSelect.setSelectBody(setOperationList);
+
+        return finalSelect.toString();
     }
 
     /**
@@ -117,7 +186,8 @@ public class SelectSqlRewriter implements SqlRewriter {
      * @param fromTable   主表对象，包含表名
      * @return 重写后的 SQL 结果，包含一个或多个分片后的 SQL 语句
      */
-    private SqlRewriteResult doRewrite(DataSourceEntry entry, SqlParseResult parseResult, PlainSelect plainSelect, Table fromTable) {
+    private SqlRewriteResult doRewrite(DataSourceEntry entry, SqlParseResult parseResult, PlainSelect plainSelect,
+            Table fromTable) {
         SqlRewriteResult result = new SqlRewriteResult();
         result.setOriginalSql(parseResult.getOriginalSql());
         String fromTableName = fromTable.getName();
@@ -155,7 +225,7 @@ public class SelectSqlRewriter implements SqlRewriter {
             Select select = (Select) stmt;
             PlainSelect cloned = (PlainSelect) select.getSelectBody();
 
-            String newTableName = fromShardingRuleConfig.getTableName() + "_" + sharding;
+            String newTableName = TableUtils.getPhysicalTableName(fromShardingRuleConfig.getTableName(), sharding);
             String fromShardingColumn = fromShardingRuleConfig.getShardingColumn();
 
             Table clonedFromTable = (Table) cloned.getFromItem();
@@ -289,7 +359,7 @@ public class SelectSqlRewriter implements SqlRewriter {
             }
             String columnName = getColumnName(inExpression.getLeftExpression(), table, shardingColumn);
             if (columnName != null) {
-                Object value = getValue(inExpression.getRightExpression());
+                Object value = getListValue(inExpression.getRightItemsList());
                 conditions.add(new SqlCondition(columnName, ConditionType.IN, value));
             }
             return;
@@ -426,6 +496,23 @@ public class SelectSqlRewriter implements SqlRewriter {
             return values;
         }
         return expression.toString();
+    }
+
+    /**
+     * 从ItemsList中获取列表值列表
+     */
+    private Object getListValue(ItemsList itemsList) {
+        List<Object> values = new ArrayList<>();
+        if (itemsList == null) {
+            return values;
+        }
+        if (itemsList instanceof ExpressionList) {
+            ExpressionList expressionList = (ExpressionList) itemsList;
+            for (Expression exp : expressionList.getExpressions()) {
+                values.add(getValue(exp));
+            }
+        }
+        return values;
     }
 
     /**
