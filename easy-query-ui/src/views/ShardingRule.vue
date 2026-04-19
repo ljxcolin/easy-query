@@ -4,9 +4,6 @@
       <div class="toolbar">
         <div class="toolbar-left">
           <el-button type="primary" @click="handleAdd">
-            <el-icon style="margin-right: 5px;">
-              <Plus />
-            </el-icon>
             新增分片规则
           </el-button>
         </div>

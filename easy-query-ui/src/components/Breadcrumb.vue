@@ -2,7 +2,7 @@
   <div class="breadcrumb-container">
     <el-breadcrumb separator="/">
       <el-breadcrumb-item>
-        <el-button type="info" @click="handleBack" circle size="small" :disabled="!canGoBack">
+        <el-button type="info" @click="handleBack" circle size="small">
           <el-icon><ArrowLeft /></el-icon>
         </el-button>
       </el-breadcrumb-item>
@@ -41,12 +41,14 @@ const currentName = computed(() => {
 });
 
 const handleBack = () => {
-  router.back();
+  if (canGoBack.value) {
+    router.back();
+  }
 };
 
 const getSegmentName = (segment: string): string => {
   const nameMap: Record<string, string> = {
-    'data-source': '数据源管理',
+    'data-source': '数据源',
     'sql-query': 'SQL 查询',
     'sharding-rule': '分片规则'
   };
@@ -96,5 +98,14 @@ const getSegmentName = (segment: string): string => {
 
 :deep(.el-button) {
   margin-right: 8px;
+  background-color: #fff;
+  border: 1px solid #dcdfe6;
+  transition: all 0.3s;
+}
+
+:deep(.el-button:hover) {
+  background-color: #f5f7fa;
+  border-color: #c0c4cc;
+  color: #409eff;
 }
 </style>

@@ -1,9 +1,9 @@
 <template>
   <div class="back-button-container">
     <el-button 
+      v-if="canGoBack"
       @click="handleBack" 
       :icon="ArrowLeft"
-      :disabled="!canGoBack"
       circle
       size="default"
     />
@@ -24,7 +24,7 @@ const canGoBack = computed(() => {
 });
 
 const handleBack = () => {
-  // 返回上一页或默认返回数据源管理页
+  // 返回上一页或默认返回数据源页
   router.back();
 };
 </script>
@@ -46,11 +46,6 @@ const handleBack = () => {
   background-color: #f5f7fa;
   color: #409eff;
   transform: translateX(-3px);
-}
-
-:deep(.el-button.is-disabled) {
-  opacity: 0.3;
-  cursor: not-allowed;
 }
 
 :deep(.el-button.is-disabled:hover) {

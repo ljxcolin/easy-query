@@ -31,8 +31,13 @@
     </div>
 
     <div class="right-panel">
+      <!-- 编辑器选项卡 -->
+      <div class="editor-tabs-toolbar">
+        <el-button type="danger" @click="handleAddNewEditorTab('SELECT * FROM')">新增</el-button>
+      </div>
       <div class="editor-tabs-container">
-        <el-tabs v-model="activeEditorTab" type="card" closable @tab-remove="handleRemoveEditorTab" class="editor-tabs">
+        <el-tabs v-model="activeEditorTab" type="card" closable @tab-click="handleEditorTabChange"
+          @tab-remove="handleRemoveEditorTab" class="editor-tabs">
           <el-tab-pane v-for="tab in editorTabs" :key="tab.id" :label="tab.title" :name="tab.id">
             <div v-if="tab.id === activeEditorTab" class="editor-wrapper">
               <div :ref="el => setEditorRef(el, tab.id)" class="editor"></div>
@@ -40,7 +45,6 @@
                 <el-button type="info" @click="handleCheckSql(tab)">检查</el-button>
                 <el-button type="primary" @click="handleExecuteQuery(tab)" :loading="tab.executing">执行</el-button>
                 <el-button type="success" @click="openSaveDialog(tab)">保存</el-button>
-                <el-button type="danger" @click="handleAddNewEditorTab">新增</el-button>
               </div>
               <div class="result-container" v-if="tab.result && tab.result.length > 0">
                 <el-table :data="tab.result" style="width: 100%" max-height="300" border scrollbar-always-on>
@@ -118,15 +122,13 @@ const saveFormRules = {
   name: [{ required: true, message: '请输入SQL查询名称', trigger: 'blur' }]
 };
 
-const setEditorRef = (el: any, tabId: string) => {
+const setEditorRef = async (el: any, tabId: string) => {
   if (el && !isUnmounted) {
     editorRefs.set(tabId, el);
-    setTimeout(() => {
-      initEditorTab(tabId);
-    }, 1000);
-    // nextTick(() => {
-    //   initEditorTab(tabId);
-    // });
+    await nextTick();
+    setTimeout(async () => {
+      await initEditorTab(tabId);
+    }, 100);
   }
 };
 
@@ -194,7 +196,7 @@ const handleTableClick = (table: string) => {
   handleAddNewEditorTab(sql);
 };
 
-const handleAddNewEditorTab = (sqlContent: string = 'SELECT * FROM ') => {
+const handleAddNewEditorTab = (sqlContent: string) => {
   if (isUnmounted) return;
 
   tabCounter++;
@@ -207,53 +209,38 @@ const handleAddNewEditorTab = (sqlContent: string = 'SELECT * FROM ') => {
     messageType: '',
     executing: false
   };
-  // 卸载当前编辑器实例
-  // if (activeEditorTab.value) {
-  //   const editor = editorInstances.get(activeEditorTab.value);
-  //   if (editor) {
-  //     editor.dispose();
-  //     editorInstances.delete(activeEditorTab.value);
-  //   }
-  //   activeEditorTab.value = '';
-  // }
   editorTabs.value.push(newTab);
   activeEditorTab.value = newTab.id;
-  // nextTick(() => {
-  //   initEditorTab(newTab.id);
-  // });
 };
 
 const handleRemoveEditorTab = (tabId: string) => {
   const index = editorTabs.value.findIndex(t => t.id === tabId);
   if (index !== -1) {
-    const editor = editorInstances.get(tabId);
-    if (editor) {
-      editor.dispose();
-      editorInstances.delete(tabId);
-    }
-    editorRefs.delete(tabId);
+    disposeEditorTab(tabId);
     editorTabs.value.splice(index, 1);
-    if (activeEditorTab.value === tabId && editorTabs.value.length > 0) {
-      activeEditorTab.value = editorTabs.value[Math.max(0, index - 1)].id;
+    editorRefs.delete(tabId);
+    if (activeEditorTab.value === tabId) {
+      if (editorTabs.value.length > 0) {
+        activeEditorTab.value = editorTabs.value[Math.max(0, index - 1)].id;
+      } else {
+        activeEditorTab.value = '';
+        tabCounter = 0;
+      }
     }
   }
 };
 
-// const handleEditorTabChange = (tabId: string) => {
-//   console.log('切换到标签:', tabId);
-//   const editor = editorInstances.get(tabId);
-//   if (editor) {
-//     nextTick(() => {
-//       editor.layout();
-//     });
-//   } else {
-//     setTimeout(() => {
-//       initEditorTab(tabId);
-//     }, 100);
-//   }
-// };
+const handleEditorTabChange = (tabId: string) => {
+  console.log('切换到标签页:', tabId);
+  // 销毁非活动标签页的编辑器实例
+  editorTabs.value.forEach(tab => {
+    if (tab.id !== tabId) {
+      disposeEditorTab(tab.id);
+    }
+  });
+};
 
-const initEditorTab = (tabId: string) => {
+const initEditorTab = async (tabId: string) => {
   if (isUnmounted) return;
 
   if (!monaco.editor.getModel) {
@@ -267,13 +254,8 @@ const initEditorTab = (tabId: string) => {
   const el = editorRefs.get(tabId);
   if (!el) return;
 
-  // 清理可能存在的旧 model
-  const existingModels = monaco.editor.getModels();
-  for (const model of existingModels) {
-    if (model.uri.toString().includes(tabId)) {
-      model.dispose();
-    }
-  }
+  // 等待 DOM 渲染完成
+  await nextTick();
 
   if (!el.offsetParent || el.offsetWidth === 0 || el.offsetHeight === 0) {
     console.log('编辑器容器不可见，销毁编辑器');
@@ -289,10 +271,19 @@ const initEditorTab = (tabId: string) => {
     return;
   }
 
+  // 确保 value 是字符串类型
+  const value = typeof tab.sqlContent === 'string' ? tab.sqlContent : '';
+
   try {
+    // 创建 model 而不是直接传入 value
+    const model = monaco.editor.createModel(
+      value,
+      'sql',
+      monaco.Uri.parse(`file:///${tabId}.sql`)
+    );
+
     const editor = monaco.editor.create(el, {
-      value: tab.sqlContent,
-      language: 'sql',
+      model: model,
       theme: 'vs',
       // ============ 性能优化核心配置 ============
       automaticLayout: false,        // 关闭自动布局（最大卡顿源）
@@ -305,7 +296,6 @@ const initEditorTab = (tabId: string) => {
       lineNumbersMinChars: 3,        // 固定行号
       // 关闭耗性能的提示功能
       quickSuggestions: false,
-      // suggest: false,
       acceptSuggestionOnEnter: 'off',
       tabCompletion: 'off',
       wordBasedSuggestions: 'off',
@@ -324,6 +314,16 @@ const initEditorTab = (tabId: string) => {
 const disposeEditorTab = (tabId: string) => {
   const editor = editorInstances.get(tabId);
   if (editor) {
+    // 获取并清理 model
+    const model = editor.getModel();
+    if (model) {
+      // 在销毁之前保存编辑器的最新内容到对应的 tab
+      const tab = editorTabs.value.find(t => t.id === tabId);
+      if (tab) {
+        tab.sqlContent = model.getValue();
+      }
+      model.dispose();
+    }
     editor.dispose();
     editorInstances.delete(tabId);
   }
@@ -333,15 +333,6 @@ const disposeEditorTab = (tabId: string) => {
     el.removeAttribute('data-monaco-editor');
     el.removeAttribute('editor');
     el.classList.remove('monaco-editor');
-    const placeholder = el.querySelector('.monaco-editor-placeholder');
-    if (placeholder) {
-      placeholder.remove();
-    }
-  }
-  // 清理 Monaco 的 model
-  const model = monaco.editor.getModels().find(m => m.uri.toString().includes(tabId));
-  if (model) {
-    model.dispose();
   }
 };
 
@@ -465,22 +456,20 @@ const handleUseSavedSql = (sql: SqlQuery) => {
   };
   editorTabs.value.push(newTab);
   activeEditorTab.value = newTab.id;
-  // nextTick(() => {
-  //   initEditorTab(newTab.id);
-  // });
 };
 
 onMounted(() => {
   isUnmounted = false;
   loadDataSources();
   loadSavedSqlQueries();
-  handleAddNewEditorTab();
+  handleAddNewEditorTab('SELECT * FROM ');
 });
 
 onUnmounted(() => {
   isUnmounted = true;
-  editorInstances.forEach((editor) => {
-    editor.dispose();
+  editorTabs.value.forEach((tab) => {
+    disposeEditorTab(tab.id);
+    editorRefs.delete(tab.id);
   });
   editorInstances.clear();
   editorRefs.clear();
@@ -508,6 +497,12 @@ onUnmounted(() => {
 .datasource-header {
   padding: 10px;
   border-bottom: 1px solid #e4e7ed;
+}
+
+.editor-tabs-toolbar {
+  padding: 10px;
+  border-bottom: 1px solid #e4e7ed;
+  background-color: #fff;
 }
 
 .left-tabs {

@@ -2,7 +2,7 @@
   <div class="app">
     <el-container>
       <el-header height="60px" class="header">
-        <h1>Easy Query 数据源管理</h1>
+        <h1>EasyQuery 数据源管理与分片查询工具</h1>
       </el-header>
       <el-container class="main-container">
         <el-aside width="200px" class="aside">
@@ -13,7 +13,7 @@
           </el-menu-item>
           <el-menu-item index="/data-source">
             <el-icon><DataAnalysis /></el-icon>
-            <span>数据源管理</span>
+            <span>数据源</span>
           </el-menu-item>
           <el-menu-item index="/sharding-rule">
             <el-icon><Setting /></el-icon>

@@ -3,7 +3,6 @@
     <el-card>
       <template #header>
         <div class="card-header">
-          <span>数据源管理</span>
           <el-button type="primary" @click="handleAdd">新增数据源</el-button>
         </div>
       </template>
@@ -27,7 +26,7 @@
             <el-tag size="small" type="success">{{ scope.row.minimumIdle }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="status" label="状态" width="80" align="center">
+        <el-table-column prop="status" label="状态" min-width="100" align="center">
           <template #default="scope">
             <el-tag :type="scope.row.status === 1 ? 'success' : 'danger'" size="small">
               {{ scope.row.status === 1 ? '启用' : '禁用' }}
