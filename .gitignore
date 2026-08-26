@@ -11,6 +11,9 @@ dist/
 *.swp
 *.swo
 
+.trae/
+.vscode/
+
 # OS files
 .DS_Store
 Thumbs.db
