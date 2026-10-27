@@ -34,7 +34,7 @@ spring:
 easyquery:
   jwt:
     # HS256 签名密钥，生产环境必须更换并通过环境变量注入
-    secret: esq20xx
+    secret: esq2x7Kd9Qw3rT5yUj8mNc1vBs6hGf0pL
     # token 有效期（分钟），默认 7 天
     expire-minutes: 10080
   sharding:
