@@ -41,4 +41,18 @@ public interface ShardingRuleRepository extends JpaRepository<ShardingRuleEntity
      * @return 分片规则列表
      */
     List<ShardingRuleEntity> findByDataSourceId(Long dataSourceId);
+
+    /**
+     * 按归属用户查询分片规则
+     * @param userId 用户 ID
+     * @return 分片规则列表
+     */
+    List<ShardingRuleEntity> findByUserId(Long userId);
+
+    /**
+     * 统计归属用户的分片规则数量
+     * @param userId 用户 ID
+     * @return 数量
+     */
+    long countByUserId(Long userId);
 }

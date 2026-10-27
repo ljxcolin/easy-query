@@ -48,4 +48,22 @@ public class SqlQueryServiceImpl implements SqlQueryService {
     public boolean existsByName(String name) {
         return sqlQueryRepository.existsByName(name);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<SqlQueryEntity> findByUserId(Long userId) {
+        return sqlQueryRepository.findByUserId(userId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<SqlQueryEntity> findByUserIdAndDataSourceId(Long userId, Long dataSourceId) {
+        return sqlQueryRepository.findByUserIdAndDataSourceId(userId, dataSourceId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long countByUserId(Long userId) {
+        return sqlQueryRepository.countByUserId(userId);
+    }
 }

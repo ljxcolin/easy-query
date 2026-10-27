@@ -20,7 +20,7 @@ const route = useRoute();
 
 const canGoBack = computed(() => {
   // 如果不是首页，则可以返回
-  return route.path !== '/data-source';
+  return route.path !== '/tool/data-source';
 });
 
 const handleBack = () => {

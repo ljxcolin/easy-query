@@ -6,9 +6,9 @@ export default {
   getAllShardingRules(): Promise<Response<ShardingRule[]>> {
     return request.get('/sharding-rules');
   },
-  // 获取单个分片规则
+  // 获取单个分片规则（按名称）
   getShardingRule(name: string): Promise<Response<ShardingRule>> {
-    return request.get(`/sharding-rules/${name}`);
+    return request.get(`/sharding-rules/name/${name}`);
   },
   // 创建分片规则
   createShardingRule(shardingRule: ShardingRule): Promise<Response<ShardingRule>> {

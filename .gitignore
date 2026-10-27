@@ -13,6 +13,7 @@ dist/
 
 .trae/
 .vscode/
+.workbuddy/
 
 # OS files
 .DS_Store

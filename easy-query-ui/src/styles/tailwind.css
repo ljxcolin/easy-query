@@ -1,0 +1,2 @@
+/* Tailwind 样式入口：仅在项目介绍页与登录页引入，与工具区的 Element Plus 风格隔离 */
+@import "tailwindcss";

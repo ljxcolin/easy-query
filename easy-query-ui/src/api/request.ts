@@ -1,5 +1,6 @@
-import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
+import axios, { AxiosInstance } from 'axios';
 import type { Response } from '../types';
+import { getToken, clearLogin } from '../utils/auth';
 
 const request: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
@@ -9,10 +10,13 @@ const request: AxiosInstance = axios.create({
   }
 });
 
-// 请求拦截器
+// 请求拦截器：统一注入 JWT token
 request.interceptors.request.use(
   (config) => {
-    // 可以在这里添加 token 等
+    const token = getToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   },
   (error) => {
@@ -23,6 +27,15 @@ request.interceptors.request.use(
 // 响应拦截器
 request.interceptors.response.use(
   (response) => {
+    const body = response.data as Response;
+    // 业务码 401：未登录或登录已过期，清除本地登录态并跳转登录页
+    if (body && body.code === 401) {
+      clearLogin();
+      const current = window.location.hash.slice(1) || '/';
+      if (!current.startsWith('/login')) {
+        window.location.hash = `#/login?redirect=${encodeURIComponent(current)}`;
+      }
+    }
     return response.data;
   },
   (error) => {

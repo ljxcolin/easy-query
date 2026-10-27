@@ -5,19 +5,26 @@ export interface Response<T = any> {
   data: T;
 }
 
-// 数据源实体
+// 数据源连接状态
+export type ConnectionStatus = 'CONNECTED' | 'DISCONNECTED';
+
+// 数据源实体（响应体）
 export interface DataSource {
   id?: number;
+  userId?: number;
   name: string;
   url: string;
   username: string;
-  password: string;
+  // 仅提交时携带；服务端响应不含密码字段
+  password?: string;
   driverClassName?: string;
   maximumPoolSize?: number;
   minimumIdle?: number;
   connectionTimeout?: number;
   idleTimeout?: number;
-  status?: number;
+  // 连接状态：由服务端缓存检测结果
+  connectionStatus?: ConnectionStatus;
+  connectionStatusLabel?: string;
   createdTime?: string;
   updatedTime?: string;
 }
@@ -37,6 +44,7 @@ export interface ShardingStrategy {
 // 分片规则实体
 export interface ShardingRule {
   id?: number;
+  userId?: number;
   name: string;
   dataSourceId?: number;
   dataSourceName?: string;
@@ -45,7 +53,6 @@ export interface ShardingRule {
   strategyType: string;
   strategyConfig?: string;
   description?: string;
-  status?: number;
   createdTime?: string;
   updatedTime?: string;
   // 嵌套的策略配置对象
@@ -61,6 +68,7 @@ export interface SqlRequest {
 // SQL查询实体
 export interface SqlQuery {
   id?: number;
+  userId?: number;
   name: string;
   dataSourceId: number;
   dataSourceName?: string;

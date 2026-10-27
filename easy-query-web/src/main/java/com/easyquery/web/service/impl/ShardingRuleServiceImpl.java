@@ -73,4 +73,16 @@ public class ShardingRuleServiceImpl implements ShardingRuleService {
     public boolean existsByDataSourceIdAndTableNameExcludingId(Long dataSourceId, String tableName, Long excludeId) {
         return shardingRuleRepository.existsByDataSourceIdAndTableNameExcludingId(dataSourceId, tableName, excludeId);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ShardingRuleEntity> findByUserId(Long userId) {
+        return shardingRuleRepository.findByUserId(userId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long countByUserId(Long userId) {
+        return shardingRuleRepository.countByUserId(userId);
+    }
 }

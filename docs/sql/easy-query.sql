@@ -24,11 +24,13 @@ CREATE TABLE `data_source` (
     `minimum_idle` INT(11) NOT NULL DEFAULT 5 COMMENT '最小空闲连接数',
     `connection_timeout` BIGINT(20) NOT NULL DEFAULT 30000 COMMENT '连接超时时间 (ms)',
     `idle_timeout` BIGINT(20) NOT NULL DEFAULT 600000 COMMENT '空闲超时时间 (ms)',
+    `user_id` BIGINT(20) NOT NULL DEFAULT 0 COMMENT '归属用户 ID (sys_user.id)',
     `status` TINYINT(4) NOT NULL DEFAULT 1 COMMENT '状态：0-禁用，1-启用',
     `created_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updated_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_name` (`name`)
+    UNIQUE KEY `uk_name` (`name`),
+    KEY `idx_user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='数据源配置表';
 
 -- ============================================
@@ -43,6 +45,7 @@ CREATE TABLE `sharding_strategy` (
     `sharding_column` VARCHAR(64) NOT NULL COMMENT '分片字段',
     `config_json` TEXT COMMENT '策略配置 (JSON 格式)',
     `description` VARCHAR(256) DEFAULT NULL COMMENT '描述',
+    `user_id` BIGINT(20) NOT NULL DEFAULT 0 COMMENT '归属用户 ID (sys_user.id)。注意：JPA 实体实际使用 sharding_rule 表（脚本存在历史漂移），两表均需含 user_id 列',
     `status` TINYINT(4) NOT NULL DEFAULT 1 COMMENT '状态：0-禁用，1-启用',
     `created_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updated_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
@@ -112,11 +115,13 @@ CREATE TABLE `sql_query` (
     `data_source_name` VARCHAR(64) NOT NULL COMMENT '数据源名称',
     `sql_content` TEXT NOT NULL COMMENT 'SQL内容',
     `sharding_key` VARCHAR(64) DEFAULT NULL COMMENT '分片键值',
+    `user_id` BIGINT(20) NOT NULL DEFAULT 0 COMMENT '归属用户 ID (sys_user.id)',
     `description` TEXT COMMENT '描述',
     `created_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updated_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`),
-    KEY `idx_data_source_name` (`data_source_name`)
+    KEY `idx_data_source_name` (`data_source_name`),
+    KEY `idx_user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='SQL查询管理表';
 
 -- ============================================
@@ -177,6 +182,21 @@ CREATE TABLE `config_history` (
     KEY `idx_config_type_id` (`config_type`, `config_id`),
     KEY `idx_created_time` (`created_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='配置历史表';
+
+-- ============================================
+-- 10. 平台用户表（与示例分片表 user 区分）
+-- ============================================
+DROP TABLE IF EXISTS `sys_user`;
+CREATE TABLE `sys_user` (
+    `id` BIGINT(20) NOT NULL AUTO_INCREMENT COMMENT '主键 ID',
+    `phone` VARCHAR(32) NOT NULL COMMENT '手机号（登录唯一标识）',
+    `nickname` VARCHAR(64) DEFAULT NULL COMMENT '用户昵称',
+    `status` TINYINT(4) NOT NULL DEFAULT 1 COMMENT '状态：0-禁用，1-启用',
+    `created_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updated_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_phone` (`phone`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='平台用户表';
 
 -- ============================================
 -- 初始化数据

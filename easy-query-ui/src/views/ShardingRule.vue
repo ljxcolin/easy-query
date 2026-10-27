@@ -133,7 +133,6 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { Plus } from '@element-plus/icons-vue';
 import shardingRuleApi from '@/api/shardingRule';
 import dataSourceApi from '@/api/datasource';
 import type { ShardingRule, DataSource, ShardingStrategy } from '@/types';
@@ -189,7 +188,7 @@ const testForm = reactive({
 const currentRule = ref<ShardingRule | null>(null);
 
 // 自定义校验器：分片数量
-const validateShardingCount = (rule: any, value: any, callback: Function) => {
+const validateShardingCount = (_rule: any, value: any, callback: Function) => {
   if ((form.strategyType === 'HASH' || form.strategyType === 'RANGE') &&
     (value === undefined || value === null || value === '')) {
     callback(new Error('请输入分片数量'));
@@ -199,7 +198,7 @@ const validateShardingCount = (rule: any, value: any, callback: Function) => {
 };
 
 // 自定义校验器：分片起始值
-const validateShardingStart = (rule: any, value: any, callback: Function) => {
+const validateShardingStart = (_rule: any, value: any, callback: Function) => {
   if (form.strategyType === 'HASH' &&
     (value === undefined || value === null || value === '')) {
     callback(new Error('请输入分片起始值'));
@@ -209,7 +208,7 @@ const validateShardingStart = (rule: any, value: any, callback: Function) => {
 };
 
 // 自定义校验器：范围起始值
-const validateRangeStart = (rule: any, value: any, callback: Function) => {
+const validateRangeStart = (_rule: any, value: any, callback: Function) => {
   if (form.strategyType === 'RANGE' &&
     (value === undefined || value === null || value === '')) {
     callback(new Error('请输入范围起始值'));
@@ -219,7 +218,7 @@ const validateRangeStart = (rule: any, value: any, callback: Function) => {
 };
 
 // 自定义校验器：分片步长
-const validateRangeStep = (rule: any, value: any, callback: Function) => {
+const validateRangeStep = (_rule: any, value: any, callback: Function) => {
   if (form.strategyType === 'RANGE' &&
     (value === undefined || value === null || value === '')) {
     callback(new Error('请输入分片步长'));
@@ -229,7 +228,7 @@ const validateRangeStep = (rule: any, value: any, callback: Function) => {
 };
 
 // 自定义校验器：是否填充零
-const validatePadZero = (rule: any, value: any, callback: Function) => {
+const validatePadZero = (_rule: any, value: any, callback: Function) => {
   if ((form.strategyType === 'MONTH' || form.strategyType === 'DAY') &&
     (value === undefined || value === null)) {
     callback(new Error('请选择是否填充零'));

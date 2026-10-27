@@ -10,9 +10,9 @@
         </template>
         <el-descriptions :column="2" border>
           <el-descriptions-item label="数据源名称">{{ dataSource.name }}</el-descriptions-item>
-          <el-descriptions-item label="状态">
-            <el-tag :type="dataSource.status === 1 ? 'success' : 'danger'">
-              {{ dataSource.status === 1 ? '启用' : '禁用' }}
+          <el-descriptions-item label="连接状态">
+            <el-tag :type="dataSource.connectionStatus === 'CONNECTED' ? 'success' : 'danger'">
+              {{ dataSource.connectionStatus === 'CONNECTED' ? '连接成功' : '连接失败' }}
             </el-tag>
           </el-descriptions-item>
           <el-descriptions-item label="连接 URL" :span="2">
@@ -202,11 +202,10 @@ const dataSource = reactive<DataSource>({
   name: '',
   url: '',
   username: '',
-  password: '',
   driverClassName: '',
   maximumPoolSize: 0,
   minimumIdle: 0,
-  status: 0
+  connectionStatus: 'DISCONNECTED'
 });
 
 // 分片规则列表
@@ -237,7 +236,7 @@ const shardingSaving = ref<boolean>(false);
 const shardingFormRef = ref<any>(null);
 
 // 自定义校验器：分片数量（仅 HASH 策略需要）
-const validateShardingCount = (rule: any, value: any, callback: Function) => {
+const validateShardingCount = (_rule: any, value: any, callback: Function) => {
   if (shardingForm.strategyType === 'HASH') {
     if (value === undefined || value === null || value === '') {
       callback(new Error('请输入分片数量'));
@@ -252,7 +251,7 @@ const validateShardingCount = (rule: any, value: any, callback: Function) => {
 };
 
 // 自定义校验器：起始索引（仅 HASH 策略需要）
-const validateShardingStart = (rule: any, value: any, callback: Function) => {
+const validateShardingStart = (_rule: any, value: any, callback: Function) => {
   if (shardingForm.strategyType === 'HASH' &&
     (value === undefined || value === null || value === '')) {
     callback(new Error('请输入分片起始值'));
@@ -262,7 +261,7 @@ const validateShardingStart = (rule: any, value: any, callback: Function) => {
 };
 
 // 自定义校验器：起始值（仅 RANGE 策略需要）
-const validateRangeStart = (rule: any, value: any, callback: Function) => {
+const validateRangeStart = (_rule: any, value: any, callback: Function) => {
   if (shardingForm.strategyType === 'RANGE' &&
     (value === undefined || value === null || value === '')) {
     callback(new Error('请输入起始值'));
@@ -272,7 +271,7 @@ const validateRangeStart = (rule: any, value: any, callback: Function) => {
 };
 
 // 自定义校验器：分片步长（仅 RANGE 策略需要）
-const validateRangeStep = (rule: any, value: any, callback: Function) => {
+const validateRangeStep = (_rule: any, value: any, callback: Function) => {
   if (shardingForm.strategyType === 'RANGE' &&
     (value === undefined || value === null || value === '')) {
     callback(new Error('请输入分片步长'));
@@ -282,7 +281,7 @@ const validateRangeStep = (rule: any, value: any, callback: Function) => {
 };
 
 // 自定义校验器：是否填充零（仅 MONTH 和 DAY 策略需要）
-const validatePadZero = (rule: any, value: any, callback: Function) => {
+const validatePadZero = (_rule: any, value: any, callback: Function) => {
   if ((shardingForm.strategyType === 'MONTH' || shardingForm.strategyType === 'DAY') && 
       (value === undefined || value === null)) {
     callback(new Error('请选择是否填充零'));
@@ -409,11 +408,25 @@ const handleEdit = () => {
 const handleSaveEdit = async () => {
   saving.value = true;
   try {
-    const response = await dataSourceApi.updateDataSourceById(editForm.id!, editForm);
+    // 只提交可写字段，密码留空表示不修改
+    const payload: DataSource = {
+      name: editForm.name,
+      url: editForm.url,
+      username: editForm.username,
+      driverClassName: editForm.driverClassName,
+      maximumPoolSize: editForm.maximumPoolSize,
+      minimumIdle: editForm.minimumIdle
+    };
+    if (editForm.password) {
+      payload.password = editForm.password;
+    }
+    const response = await dataSourceApi.updateDataSourceById(editForm.id!, payload);
     if (response.code === 200) {
       ElMessage.success('更新成功');
       editDialogVisible.value = false;
       loadDataSourceDetail();
+    } else {
+      ElMessage.error(response.message || '更新失败');
     }
   } catch (error: any) {
     console.error('Error updating data source:', error);
@@ -426,15 +439,21 @@ const handleSaveEdit = async () => {
 // 测试连接
 const handleTest = async () => {
   try {
-    const response = await dataSourceApi.testConnection(dataSource);
-    if (response.code === 200) {
-      ElMessage.success('连接测试成功');
+    const response = await dataSourceApi.testConnection(dataSource.id!);
+    if (response.code === 200 && response.data) {
+      dataSource.connectionStatus = response.data.connectionStatus;
+      dataSource.connectionStatusLabel = response.data.connectionStatusLabel;
+      if (response.data.connectionStatus === 'CONNECTED') {
+        ElMessage.success('连接成功');
+      } else {
+        ElMessage.error('连接失败，请检查连接配置');
+      }
     } else {
-      ElMessage.error('连接测试失败');
+      ElMessage.error(response.message || '连接检测失败');
     }
   } catch (error: any) {
     console.error('Error testing connection:', error);
-    ElMessage.error('连接测试失败');
+    ElMessage.error('连接检测失败');
   }
 };
 

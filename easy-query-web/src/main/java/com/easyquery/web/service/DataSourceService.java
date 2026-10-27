@@ -11,4 +11,18 @@ public interface DataSourceService {
     void deleteById(Long id);
     void deleteByName(String name);
     boolean existsByName(String name);
+
+    /**
+     * 按归属用户查询数据源
+     * @param userId 用户 ID
+     * @return 数据源列表
+     */
+    List<DataSourceEntity> findByUserId(Long userId);
+
+    /**
+     * 统计归属用户的数据源数量
+     * @param userId 用户 ID
+     * @return 数量
+     */
+    long countByUserId(Long userId);
 }

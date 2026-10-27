@@ -48,8 +48,8 @@
               </div>
               <div class="result-container" v-if="tab.result && tab.result.length > 0">
                 <el-table :data="tab.result" style="width: 100%" max-height="300" border scrollbar-always-on>
-                  <el-table-column v-for="(_, key) in tab.result[0]" :key="key" :prop="key as string"
-                    :label="key as string" show-overflow-tooltip />
+                  <el-table-column v-for="(_, key) in tab.result[0]" :key="key" :prop="String(key)"
+                    :label="String(key)" show-overflow-tooltip />
                 </el-table>
               </div>
               <div class="message" v-if="tab.message" :class="tab.messageType">

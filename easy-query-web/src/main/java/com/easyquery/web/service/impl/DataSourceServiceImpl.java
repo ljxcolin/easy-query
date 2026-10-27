@@ -56,4 +56,16 @@ public class DataSourceServiceImpl implements DataSourceService {
     public boolean existsByName(String name) {
         return dataSourceRepository.existsByName(name);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<DataSourceEntity> findByUserId(Long userId) {
+        return dataSourceRepository.findByUserId(userId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long countByUserId(Long userId) {
+        return dataSourceRepository.countByUserId(userId);
+    }
 }

@@ -1,5 +1,6 @@
 import { defineConfig, loadEnv, type UserConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import tailwindcss from '@tailwindcss/vite'
 import { resolve, dirname } from 'path'
 import { fileURLToPath } from 'url'
 
@@ -8,10 +9,11 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }): UserConfig => {
   const env = loadEnv(mode, process.cwd(), '')
-  
+
   return {
     plugins: [
-      vue()
+      vue(),
+      tailwindcss()
     ],
     resolve: {
       alias: {

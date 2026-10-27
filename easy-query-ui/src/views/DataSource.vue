@@ -1,43 +1,43 @@
 <template>
   <div class="data-source">
     <el-card>
-      <template #header>
-        <div class="card-header">
+      <div class="toolbar">
+        <div class="toolbar-left">
           <el-button type="primary" @click="handleAdd">新增数据源</el-button>
         </div>
-      </template>
-      
+      </div>
       <el-table :data="dataSources" style="width: 100%" v-loading="loading" :header-cell-style="{ background: '#f5f7fa', color: '#606266' }">
-        <el-table-column prop="name" label="数据源名称" width="140" show-overflow-tooltip />
-        <el-table-column prop="url" label="连接 URL" width="300" show-overflow-tooltip>
+        <el-table-column prop="name" label="数据源名称" min-width="140" show-overflow-tooltip />
+        <el-table-column prop="url" label="连接 URL" min-width="300" show-overflow-tooltip>
           <template #default="scope">
             <span class="url-text">{{ scope.row.url }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="username" label="用户名" width="120" />
-        <el-table-column prop="driverClassName" label="驱动类" width="220" show-overflow-tooltip />
-        <el-table-column prop="maximumPoolSize" label="最大连接数" width="100" align="center">
+        <el-table-column prop="username" label="用户名" min-width="120" show-overflow-tooltip />
+        <el-table-column prop="driverClassName" label="驱动类" min-width="200" show-overflow-tooltip />
+        <el-table-column prop="maximumPoolSize" label="最大连接数" min-width="100" align="center">
           <template #default="scope">
             <el-tag size="small" type="info">{{ scope.row.maximumPoolSize }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="minimumIdle" label="最小空闲数" width="100" align="center">
+        <el-table-column prop="minimumIdle" label="最小空闲数" min-width="100" align="center">
           <template #default="scope">
             <el-tag size="small" type="success">{{ scope.row.minimumIdle }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="status" label="状态" min-width="100" align="center">
+        <el-table-column prop="connectionStatus" label="连接状态" min-width="110" align="center">
           <template #default="scope">
-            <el-tag :type="scope.row.status === 1 ? 'success' : 'danger'" size="small">
-              {{ scope.row.status === 1 ? '启用' : '禁用' }}
+            <el-tag :type="scope.row.connectionStatus === 'CONNECTED' ? 'success' : 'danger'" size="small">
+              {{ scope.row.connectionStatus === 'CONNECTED' ? '连接成功' : '连接失败' }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="280" fixed="right">
+        <el-table-column label="操作" width="280" fixed="right" align="center">
           <template #default="scope">
             <el-button size="small" type="primary" @click="handleViewDetail(scope.row)">查看</el-button>
             <el-button size="small" type="warning" @click="handleEdit(scope.row)">编辑</el-button>
-            <el-button size="small" type="success" @click="handleTest(scope.row)">测试</el-button>
+            <el-button size="small" type="success" :loading="testingId === scope.row.id"
+              @click="handleTest(scope.row)">测试</el-button>
             <el-button size="small" type="danger" @click="handleDelete(scope.row)">删除</el-button>
           </template>
         </el-table-column>
@@ -61,7 +61,8 @@
           <el-input v-model="form.username" />
         </el-form-item>
         <el-form-item label="密码" prop="password">
-          <el-input v-model="form.password" :type="passwordVisible ? 'text' : 'password'">
+          <el-input v-model="form.password" :type="passwordVisible ? 'text' : 'password'"
+            :placeholder="isEdit ? '不修改请留空' : '请输入数据库密码'">
             <template #suffix>
               <el-icon @click="passwordVisible = !passwordVisible" style="cursor: pointer">
                 <component :is="passwordVisible ? 'View' : 'Hide'" />
@@ -90,10 +91,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus';
-import { View, Hide } from '@element-plus/icons-vue';
 import dataSourceApi from '@/api/datasource';
 import type { DataSource } from '@/types';
 
@@ -110,16 +110,19 @@ const isEdit = ref<boolean>(false);
 const saving = ref<boolean>(false);
 const formRef = ref<FormInstance>();
 const passwordVisible = ref<boolean>(false);
+// 正在检测连接的数据源 ID
+const testingId = ref<number | null>(null);
 
-const formRules: FormRules = {
+// 密码仅在新增时必填；编辑时留空表示不修改
+const formRules = computed<FormRules>(() => ({
   name: [{ required: true, message: '请输入数据源名称', trigger: 'blur' }],
   url: [{ required: true, message: '请输入连接 URL', trigger: 'blur' }],
   username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
-  password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+  password: isEdit.value ? [] : [{ required: true, message: '请输入密码', trigger: 'blur' }],
   driverClassName: [{ required: true, message: '请输入驱动类', trigger: 'blur' }],
   maximumPoolSize: [{ required: true, message: '请输入最大连接数', trigger: 'blur' }],
   minimumIdle: [{ required: true, message: '请输入最小空闲数', trigger: 'blur' }]
-};
+}));
 
 // 表单数据
 const form = reactive<DataSource>({
@@ -164,30 +167,52 @@ const handleEdit = (row: DataSource) => {
   dialogTitle.value = '编辑数据源';
   isEdit.value = true;
   Object.assign(form, row);
+  // 服务端不返回密码，编辑时留空表示保持原密码
+  form.password = '';
   dialogVisible.value = true;
 };
 
 const handleSave = async () => {
   if (!formRef.value) return;
-  
+
   await formRef.value.validate(async (valid) => {
     if (!valid) return;
-    
+
     saving.value = true;
     try {
+      // 仅提交可写字段：不携带 id / 连接状态等只读字段
+      const payload: DataSource = {
+        name: form.name,
+        url: form.url,
+        username: form.username,
+        driverClassName: form.driverClassName,
+        maximumPoolSize: form.maximumPoolSize,
+        minimumIdle: form.minimumIdle,
+        connectionTimeout: form.connectionTimeout,
+        idleTimeout: form.idleTimeout
+      };
+      // 编辑时密码留空则不提交，由后端保留原密码
+      if (form.password) {
+        payload.password = form.password;
+      }
+
       if (isEdit.value) {
-        const response = await dataSourceApi.updateDataSourceById(form.id!, form);
+        const response = await dataSourceApi.updateDataSourceById(form.id!, payload);
         if (response.code === 200) {
           ElMessage.success('更新成功');
           dialogVisible.value = false;
           loadDataSources();
+        } else {
+          ElMessage.error(response.message || '更新失败');
         }
       } else {
-        const response = await dataSourceApi.createDataSource(form);
+        const response = await dataSourceApi.createDataSource(payload);
         if (response.code === 200) {
           ElMessage.success('新增成功');
           dialogVisible.value = false;
           loadDataSources();
+        } else {
+          ElMessage.error(response.message || '新增失败');
         }
       }
     } catch (error: any) {
@@ -219,22 +244,33 @@ const handleDelete = (row: DataSource) => {
 };
 
 const handleTest = async (dataSource: DataSource) => {
+  if (!dataSource.id) return;
+  testingId.value = dataSource.id;
   try {
-    const response = await dataSourceApi.testConnection(dataSource);
-    if (response.code === 200) {
-      ElMessage.success('连接测试成功');
+    const response = await dataSourceApi.testConnection(dataSource.id);
+    if (response.code === 200 && response.data) {
+      // 直接同步该行最新连接状态
+      dataSource.connectionStatus = response.data.connectionStatus;
+      dataSource.connectionStatusLabel = response.data.connectionStatusLabel;
+      if (response.data.connectionStatus === 'CONNECTED') {
+        ElMessage.success('连接成功');
+      } else {
+        ElMessage.error('连接失败，请检查连接配置');
+      }
     } else {
-      ElMessage.error('连接测试失败');
+      ElMessage.error(response.message || '连接检测失败');
     }
   } catch (error: any) {
     console.error('Error testing connection:', error);
-    ElMessage.error('连接测试失败');
+    ElMessage.error('连接检测失败');
+  } finally {
+    testingId.value = null;
   }
 };
 
 // 查看详情
 const handleViewDetail = (row: DataSource) => {
-  router.push(`/data-source/${row.id}`);
+  router.push(`/tool/data-source/${row.id}`);
 };
 
 const resetForm = () => {
@@ -265,6 +301,21 @@ onMounted(() => {
   align-items: center;
   font-size: 16px;
   font-weight: 500;
+}
+
+.toolbar {
+  margin-bottom: 15px;
+  padding: 10px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.toolbar-left,
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .dialog-footer {

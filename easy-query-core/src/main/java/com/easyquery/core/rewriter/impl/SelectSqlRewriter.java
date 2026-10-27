@@ -20,6 +20,7 @@ import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.ValueListExpression;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
+import net.sf.jsqlparser.expression.operators.relational.Between;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThan;
 import net.sf.jsqlparser.expression.operators.relational.GreaterThanEquals;
@@ -50,6 +51,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class SelectSqlRewriter implements SqlRewriter {
@@ -411,6 +413,20 @@ public class SelectSqlRewriter implements SqlRewriter {
             if (columnName != null) {
                 Object value = getValue(lessThanEquals.getRightExpression());
                 conditions.add(new SqlCondition(columnName, ConditionType.LESS_THAN_OR_EQUAL, value));
+            }
+            return;
+        }
+
+        if (expression instanceof Between) {
+            Between between = (Between) expression;
+            String columnName = getColumnName(between.getLeftExpression(), table, shardingColumn);
+            if (columnName != null) {
+                // BETWEEN 的上下界按下标 0/1 存放，交由分片策略决定能否换算成区间
+                List<Object> bounds = Arrays.asList(
+                        getValue(between.getBetweenExpressionStart()),
+                        getValue(between.getBetweenExpressionEnd()));
+                ConditionType conditionType = between.isNot() ? ConditionType.NOT_BETWEEN : ConditionType.BETWEEN;
+                conditions.add(new SqlCondition(columnName, conditionType, bounds));
             }
             return;
         }

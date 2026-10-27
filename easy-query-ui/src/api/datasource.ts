@@ -26,9 +26,9 @@ export default {
   deleteDataSourceById(id: number): Promise<Response<void>> {
     return request.delete(`/data-sources/${id}`);
   },
-  // 测试数据源连接
-  testConnection(dataSource: DataSource): Promise<Response<boolean>> {
-    return request.post('/data-sources/test-connection', dataSource);
+  // 测试数据源连接（返回最新连接状态）
+  testConnection(id: number): Promise<Response<DataSource>> {
+    return request.post(`/data-sources/${id}/test-connection`);
   },
   // 获取数据源下的所有表
   getTables(dataSourceId: number): Promise<Response<string[]>> {

@@ -6,7 +6,7 @@
           <el-icon><ArrowLeft /></el-icon>
         </el-button>
       </el-breadcrumb-item>
-      <el-breadcrumb-item :to="{ path: '/' }">
+      <el-breadcrumb-item :to="{ path: '/tool' }">
         <el-icon><HomeFilled /></el-icon>
         首页
       </el-breadcrumb-item>
@@ -33,9 +33,10 @@ const canGoBack = computed(() => {
 
 const currentName = computed(() => {
   const pathSegments = route.path.split('/').filter(Boolean);
-  if (pathSegments.length > 0) {
-    const segment = pathSegments[0];
-    return getSegmentName(segment);
+  // 跳过工具区前缀 tool
+  const segments = pathSegments[0] === 'tool' ? pathSegments.slice(1) : pathSegments;
+  if (segments.length > 0) {
+    return getSegmentName(segments[0]);
   }
   return '';
 });

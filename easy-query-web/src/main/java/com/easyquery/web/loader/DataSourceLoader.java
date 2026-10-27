@@ -234,6 +234,9 @@ public class DataSourceLoader implements ApplicationRunner {
     
     /**
      * 添加分片规则（动态）
+     *
+     * <p>新规则必须立即计算可用物理表：{@code doSharding} 依赖
+     * {@code availableTableNames}，否则运行时无法路由。</p>
      */
     public synchronized void addShardingRule(ShardingRuleEntity rule) {
         // 检查数据源是否存在
@@ -242,17 +245,15 @@ public class DataSourceLoader implements ApplicationRunner {
             logger.warn("数据源 [ID:{}] 不存在，无法添加分片规则", rule.getDataSourceId());
             return;
         }
-        
-        // 更新 DataSourceEntry 中的分片规则
-        if (entry.getShardingRuleConfigs() == null) {
-            // DataSourceEntry 构造函数已经初始化了空列表，这里不需要再处理
-        }
-        
+
         ShardingRuleConfig ruleConfig = new ShardingRuleConfig();
         BeanUtils.copyProperties(rule, ruleConfig);
         ruleConfig.setStrategyConfig(parseStrategyConfig(rule.getStrategyConfig()));
         entry.getShardingRuleConfigs().add(ruleConfig);
-        
+
+        // 立即计算可用表，避免规则"看起来加上了、查询却路由不了"
+        entry.refreshShardingRule(ruleConfig);
+
         logger.info("动态添加分片规则 [{}] 成功", rule.getName());
     }
     
