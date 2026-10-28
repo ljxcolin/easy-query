@@ -6,7 +6,7 @@
           <el-icon><ArrowLeft /></el-icon>
         </el-button>
       </el-breadcrumb-item>
-      <el-breadcrumb-item :to="{ path: '/tool' }">
+      <el-breadcrumb-item :to="{ path: '/console' }">
         <el-icon><HomeFilled /></el-icon>
         首页
       </el-breadcrumb-item>
@@ -33,8 +33,8 @@ const canGoBack = computed(() => {
 
 const currentName = computed(() => {
   const pathSegments = route.path.split('/').filter(Boolean);
-  // 跳过工具区前缀 tool
-  const segments = pathSegments[0] === 'tool' ? pathSegments.slice(1) : pathSegments;
+  // 跳过工作台前缀 console
+  const segments = pathSegments[0] === 'console' ? pathSegments.slice(1) : pathSegments;
   if (segments.length > 0) {
     return getSegmentName(segments[0]);
   }
@@ -60,8 +60,8 @@ const getSegmentName = (segment: string): string => {
 <style scoped>
 .breadcrumb-container {
   padding: 12px 20px;
-  background-color: #fff;
-  border-bottom: 1px solid #e6e6e6;
+  background-color: var(--eq-aside-bg, #fff);
+  border-bottom: 1px solid var(--eq-border, #e6e6e6);
 }
 
 :deep(.el-breadcrumb) {

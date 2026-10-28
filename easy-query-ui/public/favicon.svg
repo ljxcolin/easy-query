@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="eq-mark" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#38bdf8" />
+      <stop offset="1" stop-color="#4338ca" />
+    </linearGradient>
+  </defs>
+  <!-- 圆角方形底 -->
+  <rect width="64" height="64" rx="15" fill="url(#eq-mark)" />
+  <!-- 数据库：顶部椭圆 + 双层柱体 -->
+  <ellipse cx="32" cy="19" rx="14.5" ry="6.5" fill="#ffffff" />
+  <path d="M17.5 19.5v13c0 3.6 6.5 6.5 14.5 6.5s14.5-2.9 14.5-6.5v-13" fill="none" stroke="#ffffff"
+    stroke-width="4.5" stroke-linecap="round" />
+  <path d="M17.5 32.5c0 3.6 6.5 6.5 14.5 6.5s14.5-2.9 14.5-6.5" fill="none" stroke="#ffffff" stroke-width="4.5"
+    stroke-linecap="round" opacity="0.55" />
+  <!-- 分片：底部三块高度不等的分片柱 -->
+  <g fill="#ffffff">
+    <rect x="17" y="43" width="7" height="9" rx="3" opacity="0.9" />
+    <rect x="28.5" y="43" width="7" height="14" rx="3" />
+    <rect x="40" y="43" width="7" height="11" rx="3" opacity="0.75" />
+  </g>
+</svg>

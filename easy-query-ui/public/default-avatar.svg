@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="eq-avatar" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7dd3fc" />
+      <stop offset="1" stop-color="#4f46e5" />
+    </linearGradient>
+    <clipPath id="eq-avatar-clip">
+      <circle cx="64" cy="64" r="64" />
+    </clipPath>
+  </defs>
+  <g clip-path="url(#eq-avatar-clip)">
+    <circle cx="64" cy="64" r="64" fill="url(#eq-avatar)" />
+    <!-- 头像：头部 + 肩部 -->
+    <circle cx="64" cy="48" r="21" fill="#ffffff" opacity="0.95" />
+    <path d="M12 128c0-28.7 23.3-48 52-48s52 19.3 52 48z" fill="#ffffff" opacity="0.95" />
+  </g>
+</svg>

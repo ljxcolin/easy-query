@@ -29,13 +29,13 @@
         <span class="quick-title">快捷操作</span>
       </template>
       <div class="quick-actions">
-        <el-button type="primary" plain @click="router.push('/tool/data-source')">
+        <el-button type="primary" plain @click="router.push('/console/data-source')">
           <el-icon><Plus /></el-icon>&nbsp;新增数据源
         </el-button>
-        <el-button type="success" plain @click="router.push('/tool/sharding-rule')">
+        <el-button type="success" plain @click="router.push('/console/sharding-rule')">
           <el-icon><Setting /></el-icon>&nbsp;配置分片规则
         </el-button>
-        <el-button type="warning" plain @click="router.push('/tool/sql-query')">
+        <el-button type="warning" plain @click="router.push('/console/sql-query')">
           <el-icon><Document /></el-icon>&nbsp;开始 SQL 查询
         </el-button>
       </div>
@@ -48,13 +48,14 @@ import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { DataAnalysis, Setting, Document, Plus } from '@element-plus/icons-vue';
 import statsApi from '../api/stats';
-import { getStoredUser } from '../utils/auth';
+import { useUser } from '../stores/user';
 
 const router = useRouter();
 const loading = ref(true);
 
-const currentUser = getStoredUser();
-const nickname = computed(() => currentUser?.nickname || '');
+// 使用全局用户态，登录成功后即时生效
+const { user } = useUser();
+const nickname = computed(() => user.value?.nickname || '');
 
 const counts = ref({ dataSourceCount: 0, shardingRuleCount: 0, sqlQueryCount: 0 });
 
@@ -63,21 +64,21 @@ const statCards = computed(() => [
     title: '数据源',
     value: counts.value.dataSourceCount,
     icon: DataAnalysis,
-    path: '/tool/data-source',
+    path: '/console/data-source',
     gradient: 'linear-gradient(135deg, #409eff 0%, #79bbff 100%)'
   },
   {
     title: '分片规则',
     value: counts.value.shardingRuleCount,
     icon: Setting,
-    path: '/tool/sharding-rule',
+    path: '/console/sharding-rule',
     gradient: 'linear-gradient(135deg, #67c23a 0%, #95d475 100%)'
   },
   {
     title: 'SQL 查询',
     value: counts.value.sqlQueryCount,
     icon: Document,
-    path: '/tool/sql-query',
+    path: '/console/sql-query',
     gradient: 'linear-gradient(135deg, #e6a23c 0%, #eebe77 100%)'
   }
 ]);

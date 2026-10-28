@@ -82,6 +82,7 @@ import { useRoute, useRouter, RouterLink } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import authApi from '../api/auth';
 import { setLogin } from '../utils/auth';
+import { setUser } from '../stores/user';
 
 const route = useRoute();
 const router = useRouter();
@@ -114,7 +115,7 @@ async function handleSendCode() {
     if (res.code === 200 && res.data) {
       // 模拟通道：自动填充验证码
       code.value = res.data.code;
-      ElMessage.success('验证码已发送（演示模式已自动填充）');
+      ElMessage.success('验证码已发送');
       startCountdown();
     } else {
       errorMsg.value = res.message || '验证码发送失败';
@@ -146,8 +147,14 @@ async function handleLogin() {
         phone: res.data.phone,
         nickname: res.data.nickname
       });
+      // 同步全局用户态，否则工作台顶栏在本次会话内读不到刚登录的用户
+      setUser({
+        userId: res.data.userId,
+        phone: res.data.phone,
+        nickname: res.data.nickname
+      });
       ElMessage.success(res.data.newUser ? '注册成功，欢迎加入！' : '登录成功');
-      const redirect = (route.query.redirect as string) || '/tool';
+      const redirect = (route.query.redirect as string) || '/console';
       router.push(redirect);
     } else {
       errorMsg.value = res.message || '登录失败';

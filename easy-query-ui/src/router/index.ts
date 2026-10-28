@@ -22,28 +22,28 @@ const routes: RouteRecordRaw[] = [
     component: Login
   },
   {
-    // 以下为工具区，必须登录
-    path: '/tool',
-    name: 'Home',
+    // 以下为工作台，必须登录
+    path: '/console',
+    name: 'Console',
     component: Home
   },
   {
-    path: '/tool/data-source',
+    path: '/console/data-source',
     name: 'DataSource',
     component: DataSource
   },
   {
-    path: '/tool/data-source/:id',
+    path: '/console/data-source/:id',
     name: 'DataSourceDetail',
     component: DataSourceDetail
   },
   {
-    path: '/tool/sharding-rule',
+    path: '/console/sharding-rule',
     name: 'ShardingRule',
     component: ShardingRule
   },
   {
-    path: '/tool/sql-query',
+    path: '/console/sql-query',
     name: 'SqlQuery',
     component: SqlQuery
   }
@@ -54,14 +54,14 @@ const router = createRouter({
   routes
 });
 
-// 路由守卫：工具区页面必须登录，未登录重定向到登录页
+// 路由守卫：工作台页面必须登录，未登录重定向到登录页
 const WHITE_LIST = ['/', '/login'];
 
 router.beforeEach((to) => {
   if (WHITE_LIST.includes(to.path)) {
-    // 已登录用户访问登录页时直接进入工具首页
+    // 已登录用户访问登录页时直接进入工作台
     if (to.path === '/login' && isLoggedIn()) {
-      return { path: '/tool' };
+      return { path: '/console' };
     }
     return true;
   }

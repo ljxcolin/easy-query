@@ -138,7 +138,7 @@ const steps = [
 /** 立即使用：已登录进工作台，未登录去登录页 */
 function handleStart() {
   if (isLoggedIn()) {
-    router.push('/tool');
+    router.push('/console');
   } else {
     router.push('/login');
   }

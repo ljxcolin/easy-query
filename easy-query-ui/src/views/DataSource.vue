@@ -270,7 +270,7 @@ const handleTest = async (dataSource: DataSource) => {
 
 // 查看详情
 const handleViewDetail = (row: DataSource) => {
-  router.push(`/tool/data-source/${row.id}`);
+  router.push(`/console/data-source/${row.id}`);
 };
 
 const resetForm = () => {
